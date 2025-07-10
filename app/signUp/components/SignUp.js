@@ -24,7 +24,7 @@ const SignUp = () => {
     setSuccess('');
   
     try {
-      await signUp({ email: formData.email });
+      await signUp({ email: formData.email, password: formData.password });
       setSuccess('Registration successful! Please check your email to activate your account.');
   
       // Redirect after a delay
@@ -57,6 +57,18 @@ const SignUp = () => {
               placeholder="Enter Email..."
               value={formData.email}
               onChange={handleChange}  // Add this line
+              required
+            />
+          </div>
+          <div className="mt-3">
+            <label htmlFor="password" className="block text-base mb-2">Password</label>
+            <input
+              type="password"
+              id="password"
+              className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
+              value={formData.password || ''}  // Ensure password is controlled
+              onChange={handleChange}  // Add this line
+              placeholder="Enter Password..."
               required
             />
           </div>
