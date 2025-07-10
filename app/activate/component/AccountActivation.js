@@ -1,50 +1,68 @@
 "use client";
-import { useState, useEffect } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import axios from "axios";
 
 const ActivateAccount = () => {
+  const [code, setCode] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const tokenFromURL = searchParams.get("token");
 
-  useEffect(() => {
-    // Check if the token is present in the URL
-    if (tokenFromURL) {
-      // Send the token to the API for activation
-      axios
-        .post(`http://127.0.0.1:8000/api/user/activate/`, { token: tokenFromURL })
-        .then((response) => {
-          // If activation is successful, set success message and redirect
-          setMessage("Account activated successfully! Redirecting to login...");
-          setError(false);
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-          // Redirect to login page after a delay
-          setTimeout(() => {
-            router.push("/login");
-          }, 3000);
-        })
-        .catch((err) => {
-          // If request fails, log error details and show failure message
-          console.error("Activation failed:", err);
-          setMessage("Activation failed. Please try again.");
-          setError(true);
-        });
-    } else {
-      setMessage("Invalid activation link.");
+    if (!/^\d{6}$/.test(code)) {
       setError(true);
+      setMessage("Please enter a valid 6-digit code.");
+      return;
     }
-  }, [tokenFromURL, router]);
+
+    try {
+      setLoading(true);
+      setError(false);
+      setMessage("");
+
+      const response = await axios.post("http://127.0.0.1:8000/api/user/activate/", {
+        token: code,
+      });
+
+      setMessage("Account activated successfully! Redirecting to login...");
+      setTimeout(() => router.push("/login"), 3000);
+    } catch (err) {
+      console.error("Activation failed:", err);
+      setError(true);
+      setMessage("Activation failed. Please check the code and try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div className="flex justify-center items-center h-screen">
       <div className="w-96 p-6 shadow-lg bg-white rounded-lg text-center">
-        <h1 className="text-2xl font-semibold mb-4">
-          {error ? "Activation Failed" : "Activating Account"}
-        </h1>
-        <p className={error ? "text-red-600" : "text-green-600"}>{message}</p>
+        <h1 className="text-2xl font-semibold mb-4">Activate Account</h1>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          <input
+            type="text"
+            maxLength={6}
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            placeholder="Enter 6-digit activation code"
+            className="w-full px-4 py-2 border border-gray-300 rounded-md text-center"
+          />
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition"
+          >
+            {loading ? "Activating..." : "Activate"}
+          </button>
+        </form>
+        {message && (
+          <p className={`mt-4 ${error ? "text-red-600" : "text-green-600"}`}>{message}</p>
+        )}
       </div>
     </div>
   );
