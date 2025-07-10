@@ -10,6 +10,10 @@ export default function LoginComponent() {
   const [error, setError] = useState(null);
   const [userData, setUserData] = useState([])
   const [mounted, setMounted] = useState(false);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const router = useRouter(); // Initialize router here
 
   // Ensure the component only mounts on the client side
@@ -17,10 +21,13 @@ export default function LoginComponent() {
     setMounted(true);
   }, []);
 
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.id]: e.target.value });
+  };
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await login(email, password);
+      const response = await login(formData);
   
       if (!response) throw new Error('Empty response from login API');
   
@@ -81,8 +88,8 @@ export default function LoginComponent() {
               id="email"
               className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
               placeholder="Enter email..."
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              value={formData.email}
+              onChange={handleChange}
               required
             />
           </div>
@@ -95,8 +102,8 @@ export default function LoginComponent() {
               id="password"
               className="border w-full text-base px-2 py-1 focus:outline-none focus:ring-0 focus:border-gray-600"
               placeholder="Enter Password..."
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              value={formData.password}
+              onChange={handleChange}
               required
             />
           </div>
