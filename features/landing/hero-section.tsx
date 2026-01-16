@@ -1,61 +1,134 @@
+"use client";
+
+import React from "react";
+import Image from "next/image";
+import { motion, Variants } from "motion/react";
+import { ChevronRight } from "lucide-react";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { ChevronRight } from "lucide-react";
-import Image from "next/image";
-import React from "react";
+
+const containerVariants: Variants = {
+  hidden: {
+    opacity: 0,
+  },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.15,
+      delayChildren: 0.3,
+    },
+  },
+};
+
+const itemVariants: Variants = {
+  hidden: {
+    opacity: 0,
+    y: 30,
+  },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.6,
+      ease: [0.16, 1, 0.3, 1],
+    },
+  },
+};
 
 export const HeroSection = () => {
   return (
     <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
-      {/* Background Image */}
-      <Image
-        src="/background.svg"
-        alt="Zuimi background image"
-        fill
-        priority
-        className="object-cover"
-      />
-      <Image
-        src="/zuimi-logo.svg"
-        alt="Zuimi logo"
-        width={200}
-        height={100}
-        className="object-cover absolute left-1/2 -translate-x-1/2 top-10"
-      />
+      {/* Background */}
+      <motion.div
+        initial={{ scale: 1.05 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute inset-0"
+      >
+        <Image
+          src="/background.svg"
+          alt="Zuimi background image"
+          fill
+          priority
+          className="object-cover"
+        />
+      </motion.div>
+
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+        className="absolute left-1/2 -translate-x-1/2 top-10 z-10"
+      >
+        <Image
+          src="/zuimi-logo.svg"
+          alt="Zuimi logo"
+          width={200}
+          height={100}
+        />
+      </motion.div>
 
       {/* Content */}
-      <div className="relative z-10 max-w-4xl px-6 text-center flex flex-col items-center gap-6">
-        <div className="flex items-center gap-2 rounded-full bg-[#313e6b] border px-4 py-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500 animate-pulse" />
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+        className="relative z-10 max-w-4xl px-6 text-center flex flex-col items-center gap-6"
+      >
+        {/* Badge */}
+        <motion.div
+          variants={itemVariants}
+          className="flex items-center gap-2 rounded-full bg-[#313e6b] border px-4 py-1.5"
+        >
+          <motion.div
+            animate={{ scale: [1, 1.3, 1] }}
+            transition={{ repeat: Infinity, duration: 1.5 }}
+            className="w-2.5 h-2.5 rounded-full bg-green-500"
+          />
           <span className="text-sm font-medium text-white">Coming Soon</span>
-        </div>
+        </motion.div>
 
-        <h1 className="text-4xl md:text-6xl font-bold text-white leading-tight">
+        <motion.h1
+          variants={itemVariants}
+          className="text-4xl md:text-6xl font-bold text-white leading-tight"
+        >
           Your Next Favorite Movie Is Just One Click Away
-        </h1>
+        </motion.h1>
 
-        <p className="text-neutral-200 text-lg md:text-xl max-w-3xl">
+        <motion.p
+          variants={itemVariants}
+          className="text-neutral-200 text-lg md:text-xl max-w-3xl"
+        >
           Zuimi is building the future of African cinema. A streaming platform
           with local roots and global ambition that celebrates our stories,
           rewards our filmmakers, and delivers the ultimate film experience.
-        </p>
+        </motion.p>
 
-        {/* Email Input + Button */}
-        <div className="flex w-full max-w-md flex-col sm:flex-row gap-3 mt-4">
+        <motion.div
+          variants={itemVariants}
+          className="flex w-full max-w-md flex-col sm:flex-row gap-3 mt-4"
+        >
           <Input
             placeholder="Enter your email"
-            className="bg-[#313e6b] text-white placeholder:text-white"
+            className="bg-[#313e6b] text-white placeholder:text-white h-12"
           />
-          <Button className="flex items-center gap-2 bg-zuimi-blue h-12 hover:bg-zuimi-blue">
-            Join Waitlist
-            <ChevronRight className="w-4 h-4" />
-          </Button>
-        </div>
 
-        <p className="text-base text-neutral-300 mt-2">
+          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
+            <Button className="flex items-center gap-2 bg-zuimi-blue h-12 w-full hover:bg-zuimi-blue">
+              Join Waitlist
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </motion.div>
+        </motion.div>
+
+        <motion.p
+          variants={itemVariants}
+          className="text-base text-neutral-300 mt-2"
+        >
           Join the movement to strengthen African cinema
-        </p>
-      </div>
+        </motion.p>
+      </motion.div>
     </section>
   );
 };
