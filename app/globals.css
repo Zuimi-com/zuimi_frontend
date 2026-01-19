@@ -23,6 +23,7 @@
   --color-chart-1: var(--chart-1);
   --color-ring: var(--ring);
   --color-zuimi-blue: var(--zuimi-blue);
+  --color-zuimi-gray: var(--zuimi-gray);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -81,6 +82,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --zuimi-blue: #1684EF;
+  --zuimi-gray: #ceced0;
 }
 
 .dark {

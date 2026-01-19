@@ -4,7 +4,7 @@ import { KeyFeatures } from "@/features/landing/key-features";
 
 export default function Home() {
   return (
-    <main className="bg-black">
+    <main className="">
       <HeroSection />
       <KeyFeatures />
       <Footer />

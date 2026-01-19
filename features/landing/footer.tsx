@@ -16,8 +16,8 @@ const socialLinks = [
 
 export const Footer = () => {
   return (
-    <footer className="border-y mb-5 border-neutral-200 px-6 py-10">
-      <div className="max-w-7xl mx-auto flex flex-col gap-8 md:flex-row md:items-center md:justify-between">
+    <footer className="border-y mb-5 border-neutral-200 px-6 py-10 bg-black">
+      <div className="max-w-7xl mx-auto flex flex-col gap-8 md:flex-row items-center justify-center md:justify-between">
         {/* Logo */}
         <div className="flex items-center">
           <Image
@@ -35,7 +35,7 @@ export const Footer = () => {
             <Link
               key={link.label}
               href={link.href}
-              className="text-base font-medium text-white"
+              className="text-base md:text-lg font-medium text-white"
             >
               {link.label}
             </Link>

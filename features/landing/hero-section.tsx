@@ -74,7 +74,7 @@ export const HeroSection = () => {
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative z-10 max-w-4xl px-6 text-center flex flex-col items-center gap-6"
+        className="relative z-10 max-w-4xl px-6 lg:px-0 text-center flex flex-col items-center gap-6"
       >
         {/* Badge */}
         <motion.div
@@ -91,14 +91,14 @@ export const HeroSection = () => {
 
         <motion.h1
           variants={itemVariants}
-          className="text-4xl md:text-6xl font-bold text-white leading-tight"
+          className="text-[32px] md:text-[40px] font-bold text-white leading-tight max-w-123"
         >
           Your Next Favorite Movie Is Just One Click Away
         </motion.h1>
 
         <motion.p
           variants={itemVariants}
-          className="text-neutral-200 text-lg md:text-xl max-w-3xl"
+          className="text-white text-[20px] md:text-[24px] max-w-205.75"
         >
           Zuimi is building the future of African cinema. A streaming platform
           with local roots and global ambition that celebrates our stories,
@@ -107,15 +107,19 @@ export const HeroSection = () => {
 
         <motion.div
           variants={itemVariants}
-          className="flex w-full max-w-md flex-col sm:flex-row gap-3 mt-4"
+          className="flex w-full max-w-md flex-col sm:flex-row gap-3 mt-4 items-center"
         >
           <Input
             placeholder="Enter your email"
-            className="bg-[#313e6b] text-white placeholder:text-white h-12"
+            className="bg-[#313e6b] text-white placeholder:text-white h-16 placeholder:text-[20px]"
           />
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.97 }}>
-            <Button className="flex items-center gap-2 bg-zuimi-blue h-12 w-full hover:bg-zuimi-blue">
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.97 }}
+            className="w-full sm:w-auto"
+          >
+            <Button className="flex items-center gap-2 bg-zuimi-blue h-12 w-full hover:bg-zuimi-blue text-base">
               Join Waitlist
               <ChevronRight className="w-4 h-4" />
             </Button>
@@ -126,7 +130,7 @@ export const HeroSection = () => {
           variants={itemVariants}
           className="text-base text-neutral-300 mt-2"
         >
-          Join the movement to strengthen African cinema
+          🎬 Join the movement to strengthen African cinema
         </motion.p>
       </motion.div>
     </section>

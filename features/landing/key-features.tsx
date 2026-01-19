@@ -57,57 +57,63 @@ const cardVariants: Variants = {
 
 export const KeyFeatures: React.FC = () => {
   return (
-    <section className="min-h-screen flex flex-col space-y-20 items-center justify-center px-6 pb-20 pt-10">
-      <div className="max-w-7xl w-full flex flex-col items-center text-center space-y-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{
-            duration: 0.7,
-            ease: [0.16, 1, 0.3, 1],
-          }}
-          className="max-w-3xl space-y-4"
-        >
-          <h1 className="text-3xl md:text-[32px] font-bold text-white text-pretty">
-            Everything You Need for the Perfect Streaming Experience
-          </h1>
-          <p className="text-white text-2xl">
-            We are building the ultimate platform for movie enthusiasts with
-            features designed to enhance your viewing experience.
-          </p>
-        </motion.div>
+    <section className="min-h-screen flex flex-col">
+      <div className="w-full bg-linear-to-b from-[#000000] to-[#101727] py-16 px-6">
+        <div className="max-w-7xl mx-auto space-y-12 ">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.3 }}
+            transition={{
+              duration: 0.7,
+              ease: [0.16, 1, 0.3, 1],
+            }}
+            className="max-w-3xl space-y-8 mx-auto"
+          >
+            <h1 className="font-bold text-white text-center text-pretty text-[32px] md:text-[40px]">
+              Everything You Need for the Perfect Streaming Experience
+            </h1>
+            <p className="text-white text-2xl text-center">
+              We are building the ultimate platform for movie enthusiasts with
+              features designed to enhance your viewing experience.
+            </p>
+          </motion.div>
 
-        {/* Features Grid (POP UP ON SCROLL) */}
-        <motion.div
-          variants={sectionVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, amount: 0.2 }}
-          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full"
-        >
-          {data.map((item, index) => (
-            <motion.div
-              key={index}
-              variants={cardVariants}
-              whileHover={{ y: -6 }}
-              className="bg-transparent rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col text-left space-y-4 border-2 border-white"
-            >
-              <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-zuimi-blue">
-                <Image
-                  src={item.icon}
-                  alt={item.title}
-                  width={28}
-                  height={28}
-                />
-              </div>
+          {/* Features Grid (POP UP ON SCROLL) */}
+          <motion.div
+            variants={sectionVariants}
+            initial="hidden"
+            whileInView="visible"
+            viewport={{ once: true, amount: 0.2 }}
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full mt-10 md:mt-20"
+          >
+            {data.map((item, index) => (
+              <motion.div
+                key={index}
+                variants={cardVariants}
+                whileHover={{ y: -6 }}
+                className="bg-transparent rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col text-left space-y-4 border-2 border-white"
+              >
+                <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-zuimi-blue">
+                  <Image
+                    src={item.icon}
+                    alt={item.title}
+                    width={28}
+                    height={28}
+                  />
+                </div>
 
-              <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+                <h3 className="text-lg font-semibold text-zuimi-gray">
+                  {item.title}
+                </h3>
 
-              <p className="text-sm text-white leading-relaxed">{item.desc}</p>
-            </motion.div>
-          ))}
-        </motion.div>
+                <p className="text-sm text-zuimi-gray leading-relaxed">
+                  {item.desc}
+                </p>
+              </motion.div>
+            ))}
+          </motion.div>
+        </div>
       </div>
 
       {/* CTA */}
@@ -119,6 +125,7 @@ export const KeyFeatures: React.FC = () => {
           duration: 0.7,
           ease: [0.16, 1, 0.3, 1],
         }}
+        className="bg-linear-to-b to-[#000000] from-[#101727] py-16 px-6"
       >
         <JoinWaitlistCard />
       </motion.div>
