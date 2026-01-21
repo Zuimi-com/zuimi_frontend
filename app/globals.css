@@ -24,6 +24,9 @@
   --color-ring: var(--ring);
   --color-zuimi-blue: var(--zuimi-blue);
   --color-zuimi-gray: var(--zuimi-gray);
+  --color-zuimi-heading: var(--zuimi-heading);
+  --color-zuimi-accent: var(--zuimi-accent);
+  --color-zuimi-subtitle: var(--zuimi-subtitle);
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
@@ -83,6 +86,9 @@
   --sidebar-ring: oklch(0.708 0 0);
   --zuimi-blue: #1684EF;
   --zuimi-gray: #ceced0;
+  --zuimi-accent: #4A5565;
+  --zuimi-heading: #0A0A0A;
+  --zuimi-subtitle: #6A7282;
 }
 
 .dark {
@@ -125,5 +131,8 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+  .zuimi-bg-gradient {
+    @apply bg-linear-to-b from-[#000000] to-[#101727]
   }
 }
