@@ -39,6 +39,12 @@ export const newsletters: Newsletter[] = [
   },
 ];
 
+export const generateMetadata = () => {
+  return {
+    title: "Zuimi | Newsletter",
+  };
+};
+
 const NewsLetterHome = () => {
   return (
     <main className="space-y-5">

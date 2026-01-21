@@ -40,6 +40,11 @@ export const newsletters: Newsletter[] = [
   },
 ];
 
+export const generateMetadata = () => {
+  return ({
+    title: "Zuimi | Dashboard"
+  })
+}
 const DashboardHome = () => {
   return (
     <div className="space-y-10">
