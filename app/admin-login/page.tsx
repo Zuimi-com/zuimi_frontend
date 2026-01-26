@@ -51,7 +51,7 @@ export default function Page() {
             sameSite: "strict"
           });
           toast('Login Successful')
-          router.push('/dashboard');
+          router.push('/admin');
         }
       };
     } catch (err) {
