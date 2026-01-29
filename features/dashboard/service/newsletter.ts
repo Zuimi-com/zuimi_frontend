@@ -14,7 +14,7 @@ export const useGetNewsLetter = () => {
     queryKey: ["newsletter"],
     queryFn: async () => {
       const res = await axios.get<NewLetterResponse[]>(
-        `https://zuimi.onrender.com/api/newsletter/waitlist/`,
+        `${process.env.NEXT_PUBLIC_API}/newsletter/waitlist/`,
       );
       return res.data;
     },
