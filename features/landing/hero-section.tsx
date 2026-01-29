@@ -2,7 +2,7 @@
 
 import React from "react";
 import Image from "next/image";
-import { motion, Variants } from "motion/react";
+import { motion, Variants } from "framer-motion";
 import { ChevronRight } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
