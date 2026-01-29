@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@tanstack/react-query": "^5.90.20",
     "axios": "^1.13.3",
     "js-cookie": "^3.0.5",
     "lucide-react": "^0.562.0",

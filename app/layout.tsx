@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Providers from "@/components/query-provider";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -18,7 +19,6 @@ export const metadata: Metadata = {
     "Zuimi is building the future of African cinema. A streaming platform with local roots and global ambition that celebrates our stories, rewards our filmmakers, and delivers the ultimate film experience.",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -29,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

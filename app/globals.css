@@ -84,11 +84,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
-  --zuimi-blue: #1684EF;
+  --zuimi-blue: #1684ef;
   --zuimi-gray: #ceced0;
-  --zuimi-accent: #4A5565;
-  --zuimi-heading: #0A0A0A;
-  --zuimi-subtitle: #6A7282;
+  --zuimi-accent: #4a5565;
+  --zuimi-heading: #0a0a0a;
+  --zuimi-subtitle: #6a7282;
 }
 
 .dark {
@@ -133,6 +133,9 @@
     @apply bg-background text-foreground;
   }
   .zuimi-bg-gradient {
-    @apply bg-linear-to-b from-[#000000] to-[#101727]
+    @apply bg-linear-to-b from-[#000000] to-[#101727];
+  }
+  .zuimi-gradient {
+    @apply bg-linear-to-b from-[#000000] to-[#101727];
   }
 }

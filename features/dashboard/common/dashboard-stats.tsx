@@ -46,7 +46,10 @@ const DashboardStats = () => {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold">Dashboard</h1>
 
-        <Link href={"/dashboard/compose-letter"} className="bg-zuimi-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition">
+        <Link
+          href={"/admin/compose-letter"}
+          className="bg-zuimi-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
+        >
           Compose Letter
         </Link>
       </div>
@@ -61,9 +64,7 @@ const DashboardStats = () => {
               className="rounded-xl border bg-background p-5 flex flex-col gap-4"
             >
               <div className="flex items-center justify-between">
-                <span className="text-sm text-zuimi-accent">
-                  {item.title}
-                </span>
+                <span className="text-sm text-zuimi-accent">{item.title}</span>
 
                 <div
                   className={`h-9 w-9 rounded-full flex items-center justify-center ${item.iconBg}`}
