@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { generateToken, getNewsletterHistory, Row} from "@/lib/api";
+import { getNewsletterHistory, Row} from "@/lib/api";
+import Cookies from "js-cookie";
 
 
 
@@ -12,7 +13,7 @@ export default function NewsletterHistory() {
    useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = await generateToken(); 
+        const token = Cookies.get("access_token") || "";
         const data = await getNewsletterHistory(token);
         setRows(data);
       } catch (err: any) {

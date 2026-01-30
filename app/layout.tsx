@@ -18,7 +18,6 @@ export const metadata: Metadata = {
     "Zuimi is building the future of African cinema. A streaming platform with local roots and global ambition that celebrates our stories, rewards our filmmakers, and delivers the ultimate film experience.",
 };
 
-
 export default function RootLayout({
   children,
 }: Readonly<{

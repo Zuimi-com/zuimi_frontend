@@ -1,5 +1,6 @@
 import axios from "axios";
 import toast from "react-hot-toast";
+import Cookies from "js-cookie";
 
 export type Row = {
   subject: string;
@@ -22,6 +23,8 @@ export type Record = {
 }
 
 const Baseurl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_STAGING || 'http://localhost:8000';
+
+const AuthorizationToken = Cookies.get("access_token");
 
 export const adminLogin = async (email: string, password: string) => {
   try {
@@ -61,12 +64,20 @@ export const userLogin = async (email: string, password: string) => {
 
 export const generateToken = async (): Promise<string> => {
   try {
-    const response = await axios.post(`${Baseurl}/api/token/generate-access-token/`, {
+    const refreshToken = Cookies.get("refresh_token");
+
+    if (!refreshToken) {
+      throw new Error("No refresh token found");
+    }
+    const response = await axios.post(`${Baseurl}/api/token/generate-access-token/`, {refresh: refreshToken}, {
       headers: { "Content-Type": "application/json" },
     });
-
-    
-    return response.data.token;
+    Cookies.set("access_token", response.data.access, {
+      expires: 7,
+      secure: true,
+      sameSite: "strict"
+    });
+    return response.data.access;
   } catch (error: any) {
     const message = error.response?.data?.message || "Token generation failed";
     toast.error(message);
@@ -77,7 +88,7 @@ export const generateToken = async (): Promise<string> => {
 
 export const getNewsletterHistory = async (token: string): Promise<Row[]> => {
   try {
-    const response = await axios.get<Row[]>(`${Baseurl}/api/newsletter/broadcast/`, {
+    const response = await axios.get<Row[]>(`${Baseurl}/api/newsletter/broadcasts/`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,
@@ -94,7 +105,7 @@ export const getNewsletterHistory = async (token: string): Promise<Row[]> => {
 };
 
 export async function getCurrentUser(token: string): Promise<User> {
-  const response = await axios.get('/api/user/profile', {
+  const response = await axios.get('/api/user/profile/', {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
@@ -113,7 +124,7 @@ export async function getCurrentUser(token: string): Promise<User> {
 
 export const getSubscribersOverview = async (token: string): Promise<Record[]> => {
   try {
-    const response = await axios.get<Record[]>(`${Baseurl}/api/newsletter/subscribe/`, {
+    const response = await axios.get<Record[]>(`${Baseurl}/api/newsletter/waitlist/`, {
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${token}`,

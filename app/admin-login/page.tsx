@@ -45,7 +45,12 @@ export default function Page() {
         toast(response.data.message || 'Registration failed')
       } else {
         if (response?.status == 200) {
-          Cookies.set("access", response.data, {
+          Cookies.set("access_token", response.data.access, {
+            expires: 7,
+            secure: true,
+            sameSite: "strict"
+          });
+          Cookies.set("refresh_token", response.data.refresh, {
             expires: 7,
             secure: true,
             sameSite: "strict"
@@ -56,7 +61,7 @@ export default function Page() {
       };
     } catch (err) {
       console.error(err);
-
+      toast('Login failed. Please try again.');
     } finally {
       setLoading(false)
     }

@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { generateToken, getSubscribersOverview, Record} from "@/lib/api";
+import { getSubscribersOverview, Record} from "@/lib/api";
 import searchIcon from "@/public/search.svg"
 import Image from "next/image";
+import Cookies from "js-cookie";
 
 
 
@@ -22,7 +23,7 @@ export default function SubscribersOverview() {
    useEffect(() => {
     const fetchData = async () => {
       try {
-        const token = await generateToken(); 
+        const token = Cookies.get("access_token") || "";
         const data = await getSubscribersOverview(token);
         setRecords(data);
       } catch (err: any) {
@@ -34,9 +35,6 @@ export default function SubscribersOverview() {
 
     fetchData();
   }, []);
-
-  
-
 
   return (
     <div className="max-w-8xl">
