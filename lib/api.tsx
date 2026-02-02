@@ -105,7 +105,7 @@ export const getNewsletterHistory = async (token: string): Promise<Row[]> => {
 };
 
 export async function getCurrentUser(token: string): Promise<User> {
-  const response = await axios.get('/api/user/profile/', {
+  const response = await axios.get(`${Baseurl}/api/user/profile/`, {
     headers: {
       'Authorization': `Bearer ${token}`,
       'Content-Type': 'application/json',
