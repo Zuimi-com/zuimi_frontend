@@ -1,6 +1,6 @@
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";
-import React, { PropsWithChildren } from "react";
+import { PropsWithChildren } from "react";
 
 const AdminDashboardLayout = ({ children }: PropsWithChildren) => {
   return (

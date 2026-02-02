@@ -1,5 +1,5 @@
+import { axiosInstance } from "@/lib/axios";
 import { useQuery } from "@tanstack/react-query";
-import axios from "axios";
 
 type NewLetterResponse = {
   email: string;
@@ -13,8 +13,8 @@ export const useGetNewsLetter = () => {
   return useQuery({
     queryKey: ["newsletter"],
     queryFn: async () => {
-      const res = await axios.get<NewLetterResponse[]>(
-        `${process.env.NEXT_PUBLIC_API}/newsletter/waitlist/`,
+      const res = await axiosInstance.get<NewLetterResponse[]>(
+        `/newsletter/waitlist/`,
       );
       return res.data;
     },

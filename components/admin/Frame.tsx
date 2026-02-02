@@ -1,9 +1,8 @@
 "use client";
 
+import { AdminSection } from "@/types/admin";
 import { ReactNode } from "react";
 import Header from "./Header";
-import Sidebar from "./Sidebar";
-import { AdminSection } from "@/types/admin";
 
 type FrameProps = {
   selected: AdminSection;
@@ -17,7 +16,7 @@ export default function Frame({ selected, onSelect, children }: FrameProps) {
       <Header />
 
       <div className="flex min-h-[calc(100vh-64px)]">
-        <Sidebar selected={selected} onSelect={onSelect} />
+        {/* <Sidebar selected={selected} onSelect={onSelect} /> */}
 
         <main className="flex-1 p-8">{children}</main>
       </div>
