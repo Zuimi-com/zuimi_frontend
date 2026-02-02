@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { useAuth } from "../hooks/useAuth";
+import { useRouter } from "next/router";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -22,7 +24,18 @@ export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
-}>) {
+}>) { 
+
+const { isAuthenticated, loading } = useAuth();
+  const router = useRouter();
+
+  if (loading) return <div>Loading...</div>; 
+
+  if (!isAuthenticated) {
+    if (typeof window !== "undefined") router.push("/login");
+    return null; 
+  }
+
   return (
     <html lang="en">
       <body

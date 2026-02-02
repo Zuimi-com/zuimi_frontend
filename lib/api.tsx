@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { AxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
 
@@ -24,9 +24,79 @@ export type Record = {
 
 const Baseurl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_STAGING || 'http://localhost:8000';
 
-const AuthorizationToken = Cookies.get("access_token");
 
-export const adminLogin = async (email: string, password: string) => {
+async function apiRequest<T>(
+  endpoint: string,
+  method: "GET" | "POST" | "PUT" | "PATCH" | "DELETE" = "GET",
+  data?: any,
+  token?: string
+): Promise<T> {
+  try {
+   const AuthorizationToken = Cookies.get("access_token");
+
+    const config: AxiosRequestConfig = {
+      method,
+      url: `${Baseurl}${endpoint}`,
+      headers: {
+        "Content-Type": "application/json",
+        ...(AuthorizationToken ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      data,
+    };
+
+    const response = await axios(config);
+    return response.data;
+  } catch (error: any) {
+    const message =
+      error.response?.data?.message || "Request failed";
+    toast.error(message);
+    throw new Error(message);
+  }
+}
+
+
+export const adminLogin = (email: string, password: string) =>
+  apiRequest("/api/login/admin/", "POST", { email, password });
+
+
+export const userLogin = (email: string, password: string) =>
+  apiRequest("/api/login/", "POST", { email, password });
+
+
+export const generateToken = async (): Promise<string> => {
+  const refreshToken = Cookies.get("refresh_token");
+  if (!refreshToken) throw new Error("No refresh token found");
+
+  const data = await apiRequest<{ access: string }>(
+    "/api/token/generate-access-token/",
+    "POST",
+    { refresh: refreshToken }
+  );
+
+  Cookies.set("access_token", data.access, {
+    expires: 7,
+    secure: true,
+    sameSite: "strict",
+  });
+
+  return data.access;
+};
+
+
+export const getCurrentUser = (token: string) =>
+  apiRequest<User>("/api/user/profile/", "GET", undefined, token);
+
+
+export const getNewsletterHistory = (token: string) =>
+  apiRequest<Row[]>("/api/newsletter/broadcasts/", "GET", undefined, token);
+
+
+export const getSubscribersOverview = (token: string) =>
+  apiRequest<Record[]>("/api/newsletter/waitlist/", "GET", undefined, token);
+
+
+
+/*export const adminLogin = async (email: string, password: string) => {
   try {
     const response = await axios.post(
       `${Baseurl}/api/login/admin/`,
@@ -138,4 +208,4 @@ export const getSubscribersOverview = async (token: string): Promise<Record[]> =
     toast.error(message);
     throw new Error(message);
   }
-};
+}; */
