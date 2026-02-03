@@ -2,6 +2,10 @@
 
 import React from "react";
 import Image from "next/image";
+<<<<<<< HEAD
+=======
+import { motion, Variants } from "framer-motion";
+>>>>>>> 9caa74f3c8fac796bcf3d58965cc8d8cbba8e4a4
 import { JoinWaitlistCard } from "./join-waitlist-card";
 
 const data = [
