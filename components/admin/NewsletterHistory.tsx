@@ -18,7 +18,7 @@ function NewsletterTable({ rows }: NewsletterTableProps) {
   const pathname = usePathname();
   const isNewLetterPage = pathname === "/admin/newsletter";
   return (
-    <div className="max-w-6xl">
+    <div className="w-full">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {/* Header */}
         <div className="px-5 py-2">

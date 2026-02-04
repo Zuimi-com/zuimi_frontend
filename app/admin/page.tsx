@@ -3,7 +3,7 @@ import DashboardStats from "@/features/dashboard/common/dashboard-stats";
 
 const AdminHomePage = () => {
   return (
-    <div className="max-w-6xl space-y-5">
+    <div className="w-full space-y-5">
       <DashboardStats />
       <div className="space-y-4">
         <h1 className="text-2xl font-bold">Recent NewsLetter</h1>
