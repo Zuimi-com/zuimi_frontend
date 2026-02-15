@@ -1,11 +1,8 @@
 "use client";
 
 import { AdminSection } from "@/types/admin";
-
-type SidebarProps = {
-  selected: AdminSection;
-  onSelect: (section: AdminSection) => void;
-};
+import Link from "next/link";
+import { usePathname } from "next/navigation";
 
 type NavItem = {
   key: AdminSection;
@@ -17,13 +14,19 @@ function cx(...classes: Array<string | false | undefined>) {
   return classes.filter(Boolean).join(" ");
 }
 
-export default function Sidebar({ selected, onSelect }: SidebarProps) {
+export default function Sidebar() {
+  const pathname = usePathname();
   const items: NavItem[] = [
     {
-      key: "dashboard",
+      key: "/admin",
       label: "Dashboard",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <rect x="3" y="3" width="7" height="7" strokeWidth="2" />
           <rect x="14" y="3" width="7" height="7" strokeWidth="2" />
           <rect x="3" y="14" width="7" height="7" strokeWidth="2" />
@@ -32,10 +35,15 @@ export default function Sidebar({ selected, onSelect }: SidebarProps) {
       ),
     },
     {
-      key: "newsletter-history",
+      key: "/admin/newsletter",
       label: "Newsletter History",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -46,10 +54,15 @@ export default function Sidebar({ selected, onSelect }: SidebarProps) {
       ),
     },
     {
-      key: "compose-letter",
+      key: "/admin/compose-letter",
       label: "Compose Letter",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -60,10 +73,15 @@ export default function Sidebar({ selected, onSelect }: SidebarProps) {
       ),
     },
     {
-      key: "subscribers-overview",
+      key: "/admin/subscribers",
       label: "Subscribers overview",
       icon: (
-        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
           <path
             strokeLinecap="round"
             strokeLinejoin="round"
@@ -80,24 +98,27 @@ export default function Sidebar({ selected, onSelect }: SidebarProps) {
       <div className="h-[75vh] bg-white rounded-xl shadow-md border border-gray-100 p-4 flex flex-col">
         <nav className="space-y-1">
           {items.map((item) => {
-            const active = item.key === selected;
+            const active = item.key === pathname;
 
             return (
-              <button
+              <Link
                 key={item.key}
-                type="button"
-                onClick={() => onSelect(item.key)}
+                href={item.key}
                 className={cx(
                   "w-full text-left relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition",
-                  active ? "zuimi-gradient text-white" : "text-gray-700 hover:bg-gray-50"
+                  active
+                    ? "zuimi-gradient text-white"
+                    : "text-gray-700 hover:bg-gray-50",
                 )}
               >
                 {active && (
                   <span className="absolute left-0 top-1/2 -translate-y-1/2 w-1.5 h-8 rounded-full zuimi-gradient" />
                 )}
                 {item.icon}
-                <span className={cx("text-sm", active && "font-medium")}>{item.label}</span>
-              </button>
+                <span className={cx("text-sm", active && "font-medium")}>
+                  {item.label}
+                </span>
+              </Link>
             );
           })}
 
@@ -112,7 +133,12 @@ export default function Sidebar({ selected, onSelect }: SidebarProps) {
             className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg"
             onClick={() => alert("Wire logout action here")}
           >
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg
+              className="w-5 h-5"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"

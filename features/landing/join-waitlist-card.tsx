@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ChevronRight, Mail } from "lucide-react";
 import React from "react";
 
@@ -24,14 +22,14 @@ export const JoinWaitlistCard = () => {
 
       {/* Input + Button */}
       <div className="mx-auto flex max-w-xl flex-col sm:flex-row gap-3 mb-4 items-center">
-        <Input
+        <input
           placeholder="Enter your email"
           className=" bg-white text-neutral-900 placeholder:text-black h-16 placeholder:text-[20px]"
         />
-        <Button className="h-12 bg-white text-blue-600 hover:bg-neutral-100 flex items-center gap-2">
+        <button className="h-12 bg-white text-blue-600 hover:bg-neutral-100 flex items-center gap-2">
           Join Waitlist
           <ChevronRight className="w-4 h-4" />
-        </Button>
+        </button>
       </div>
 
       {/* Footer text */}
