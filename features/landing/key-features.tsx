@@ -1,26 +1,25 @@
 "use client";
-import React from "react";
 import Image from "next/image";
-import { JoinWaitlistCard } from "./join-waitlist-card";
+import React from "react";
 
 const data = [
   {
-    icon: "/movie-icon.svg",
+    icon: "/movie.svg",
     title: "Premium African Content",
     desc: "Access a curated library of high-quality African films.",
   },
   {
-    icon: "/desktop.svg",
+    icon: "/television.svg",
     title: "Multi-Device Support",
     desc: "Seamlessly switch between your phone, tablet, laptop and smart TV.",
   },
   {
-    icon: "/Reward.svg",
+    icon: "/download.svg",
     title: "Rewarding Filmmakers",
     desc: "Our ecosystem ensures creators are fairly compensated and celebrated for their incredible work.",
   },
   {
-    icon: "/globe-sphere.svg",
+    icon: "/community.svg",
     title: "Local Roots, Global Reach",
     desc: "Proudly Nigerian built with the ambition to showcase African cinema to the world.",
   },
@@ -28,7 +27,7 @@ const data = [
 
 export const KeyFeatures: React.FC = () => {
   return (
-    <section className="min-h-screen flex flex-col">
+    <section className="flex flex-col" id="features">
       <div className="w-full bg-linear-to-b from-[#000000] to-[#101727] py-16 px-6">
         <div className="max-w-7xl mx-auto space-y-12 ">
           <div className="max-w-3xl space-y-8 mx-auto">
@@ -48,7 +47,7 @@ export const KeyFeatures: React.FC = () => {
                 key={index}
                 className="bg-transparent rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col text-left space-y-4 border-2 border-white"
               >
-                <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-zuimi-blue">
+                <div className="w-14 h-14 flex items-center justify-center rounded-2xl">
                   <Image
                     src={item.icon}
                     alt={item.title}
@@ -71,9 +70,9 @@ export const KeyFeatures: React.FC = () => {
       </div>
 
       {/* CTA */}
-      <div className="bg-linear-to-b to-[#000000] from-[#101727] py-16 px-6">
+      {/* <div className="bg-linear-to-b to-[#000000] from-[#101727] py-16 px-6">
         <JoinWaitlistCard />
-      </div>
+      </div> */}
     </section>
   );
 };

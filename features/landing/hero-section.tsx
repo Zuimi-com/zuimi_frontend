@@ -6,52 +6,51 @@ import { ChevronRight } from "lucide-react";
 
 export const HeroSection = () => {
   return (
-    <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden">
+    <section className="relative w-full overflow-hidden">
+      {/* Background Image */}
       <Image
-        src="/background.svg"
+        src="/bg-image.png"
         alt="Zuimi background image"
         fill
         priority
-        className="object-cover"
+        className="object-cover -z-10"
       />
 
-      <Image src="/zuimi-logo.svg" alt="Zuimi logo" width={200} height={100} />
+      {/* Navbar */}
+      <nav className="sticky top-0 z-50 w-full flex justify-between items-center px-6 md:px-12 lg:px-20 py-6">
+        <Image src="/zuimi-logo.svg" alt="Zuimi logo" width={160} height={60} />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-4xl px-6 lg:px-0 text-center flex flex-col items-center gap-6">
-        {/* Badge */}
-        <div className="flex items-center gap-2 rounded-full bg-[#313e6b] border px-4 py-1.5">
-          <div className="w-2.5 h-2.5 rounded-full bg-green-500" />
-          <span className="text-sm font-medium text-white">Coming Soon</span>
+        <a
+          href="#contact"
+          className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
+        >
+          Join Us
+          <ChevronRight size={18} />
+        </a>
+      </nav>
+
+      {/* Centered Content */}
+      <div className="flex justify-center min-h-[calc(100vh-100px)] px-6">
+        <div className="relative z-10 max-w-4xl text-center flex flex-col items-center gap-8 mt-35">
+          <h1 className="text-2xl md:text-5xl lg:text-[54px] font-bold text-white leading-tight">
+            African stories. Told with depth.
+            <br />
+            Shared with the world.
+          </h1>
+
+          <p className="text-white/90 text-lg md:text-xl max-w-2xl">
+            Zuimi is a streaming and media platform for powerful African
+            storytelling built for film lovers and creators
+          </p>
+
+          <a
+            href="#contact"
+            className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
+          >
+            Join Us
+            <ChevronRight size={18} />
+          </a>
         </div>
-
-        <h1 className="text-[32px] md:text-[40px] font-bold text-white leading-tight max-w-123">
-          Your Next Favorite Movie Is Just One Click Away
-        </h1>
-
-        <p className="text-white text-[20px] md:text-[24px] max-w-205.75">
-          Zuimi is building the future of African cinema. A streaming platform
-          with local roots and global ambition that celebrates our stories,
-          rewards our filmmakers, and delivers the ultimate film experience.
-        </p>
-
-        <div className="flex w-full max-w-md flex-col sm:flex-row gap-3 mt-4 items-center">
-          <input
-            placeholder="Enter your email"
-            className="bg-[#313e6b] text-white placeholder:text-white h-16 placeholder:text-[20px]"
-          />
-
-          <div className="w-full sm:w-auto">
-            <button className="flex items-center gap-2 bg-zuimi-blue h-12 w-full hover:bg-zuimi-blue text-base">
-              Join Waitlist
-              <ChevronRight className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-
-        <p className="text-base text-neutral-300 mt-2">
-          🎬 Join the movement to strengthen African cinema
-        </p>
       </div>
     </section>
   );

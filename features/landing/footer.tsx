@@ -4,8 +4,8 @@ import React from "react";
 
 const navLinks = [
   { href: "/", label: "About" },
-  { href: "/", label: "Contact" },
-  { href: "/", label: "Features" },
+  { href: "#contact", label: "Contact" },
+  { href: "#features", label: "Features" },
 ];
 
 const socialLinks = [

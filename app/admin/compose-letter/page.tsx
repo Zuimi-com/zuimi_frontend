@@ -1,7 +1,6 @@
 "use client";
 import DocumentEditor from "@/components/editor";
 import { NewsletterSendCard } from "@/components/NewsletterSendCard";
-import React from "react";
 
 const ComposeLetterHome = () => {
   return (
@@ -15,8 +14,6 @@ const ComposeLetterHome = () => {
           subscribersCount={2500}
           senderName="Zuimi"
           senderEmail="zuimi@company.com"
-          onSaveDraft={() => console.log("Draft saved")}
-          onSend={() => console.log("Newsletter sent")}
         />
       </div>
     </main>
