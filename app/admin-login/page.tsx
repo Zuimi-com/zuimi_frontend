@@ -6,13 +6,14 @@ import { Inter } from "next/font/google";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import visibiltyOn from "../../public/eye-icon.svg";
 import lock from "../../public/lock.svg";
 import mail from "../../public/outline-email.svg";
 import visibilityOff from "../../public/visibility-off.svg";
 import Logo from "../../public/Zuimi Logo.svg";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -23,6 +24,7 @@ export default function Page() {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const adminLogin = useAdminLogin();
+  const { isAuthenticated, handleAuthenticate } = useAdminAuth();
 
   const router = useRouter();
 
@@ -41,11 +43,18 @@ export default function Page() {
             sameSite: "strict",
           });
           toast("Login Successful");
+          handleAuthenticate(data.access);
           router.push("/admin");
         },
       },
     );
   };
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      router.replace("/admin");
+    }
+  }, [isAuthenticated, router]);
 
   return (
     <div className="bg-gradient-to-t from-[#101727] to-[#000000] min-h-screen pt-2">

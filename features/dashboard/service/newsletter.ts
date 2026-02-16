@@ -20,3 +20,15 @@ export const useGetNewsLetter = () => {
     },
   });
 };
+
+export const useGetBroadcasts = () => {
+  return useQuery({
+    queryKey: ["broadcast"],
+    queryFn: async () => {
+      const res = await axiosInstance.get<NewLetterResponse[]>(
+        `/newsletter/broadcasts/`,
+      );
+      return res.data;
+    },
+  });
+};

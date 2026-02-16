@@ -128,6 +128,7 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scroll-behavior: smooth;
   }
   body {
     @apply bg-background text-foreground;
@@ -206,7 +207,7 @@
     background: var(--black);
     border-radius: 0.5rem;
     color: var(--white);
-    font-family: 'JetBrainsMono', monospace;
+    font-family: "JetBrainsMono", monospace;
     margin: 1.5rem 0;
     padding: 0.75rem 1rem;
 
@@ -261,77 +262,76 @@
     }
 
     /* Corner handles */
-    &[data-resize-handle='top-left'],
-    &[data-resize-handle='top-right'],
-    &[data-resize-handle='bottom-left'],
-    &[data-resize-handle='bottom-right'] {
+    &[data-resize-handle="top-left"],
+    &[data-resize-handle="top-right"],
+    &[data-resize-handle="bottom-left"],
+    &[data-resize-handle="bottom-right"] {
       width: 8px;
       height: 8px;
     }
 
-    &[data-resize-handle='top-left'] {
+    &[data-resize-handle="top-left"] {
       top: -4px;
       left: -4px;
       cursor: nwse-resize;
     }
 
-    &[data-resize-handle='top-right'] {
+    &[data-resize-handle="top-right"] {
       top: -4px;
       right: -4px;
       cursor: nesw-resize;
     }
 
-    &[data-resize-handle='bottom-left'] {
+    &[data-resize-handle="bottom-left"] {
       bottom: -4px;
       left: -4px;
       cursor: nesw-resize;
     }
 
-    &[data-resize-handle='bottom-right'] {
+    &[data-resize-handle="bottom-right"] {
       bottom: -4px;
       right: -4px;
       cursor: nwse-resize;
     }
 
     /* Edge handles */
-    &[data-resize-handle='top'],
-    &[data-resize-handle='bottom'] {
+    &[data-resize-handle="top"],
+    &[data-resize-handle="bottom"] {
       height: 6px;
       left: 8px;
       right: 8px;
     }
 
-    &[data-resize-handle='top'] {
+    &[data-resize-handle="top"] {
       top: -3px;
       cursor: ns-resize;
     }
 
-    &[data-resize-handle='bottom'] {
+    &[data-resize-handle="bottom"] {
       bottom: -3px;
       cursor: ns-resize;
     }
 
-    &[data-resize-handle='left'],
-    &[data-resize-handle='right'] {
+    &[data-resize-handle="left"],
+    &[data-resize-handle="right"] {
       width: 6px;
       top: 8px;
       bottom: 8px;
     }
 
-    &[data-resize-handle='left'] {
+    &[data-resize-handle="left"] {
       left: -3px;
       cursor: ew-resize;
     }
 
-    &[data-resize-handle='right'] {
+    &[data-resize-handle="right"] {
       right: -3px;
       cursor: ew-resize;
     }
   }
 
-  [data-resize-state='true'] [data-resize-wrapper] {
+  [data-resize-state="true"] [data-resize-wrapper] {
     outline: 1px solid rgba(0, 0, 0, 0.25);
     border-radius: 0.125rem;
   }
-
 }

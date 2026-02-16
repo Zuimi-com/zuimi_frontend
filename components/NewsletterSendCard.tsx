@@ -1,3 +1,4 @@
+import { useEditorStore } from "@/store/use-editor";
 import { SaveAll, Send, Users } from "lucide-react";
 import React from "react";
 
@@ -5,17 +6,19 @@ type NewsletterSendCardProps = {
   subscribersCount: number;
   senderName: string;
   senderEmail: string;
-  onSaveDraft?: () => void;
-  onSend?: () => void;
 };
 
 export const NewsletterSendCard: React.FC<NewsletterSendCardProps> = ({
   subscribersCount,
   senderName,
   senderEmail,
-  onSaveDraft,
-  onSend,
 }) => {
+  const { editor } = useEditorStore();
+
+  const handleSend = () => {
+    if (!editor) return;
+    console.log(editor.getHTML());
+  };
   return (
     <div className="max-w-md space-y-6 bg-white">
       {/* Recipients */}
@@ -63,15 +66,12 @@ export const NewsletterSendCard: React.FC<NewsletterSendCardProps> = ({
       {/* Actions */}
       <div className="border p-5 space-y-5 rounded-[14.78px]">
         <button
-          onClick={onSaveDraft}
+          onClick={handleSend}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50"
         >
           <SaveAll /> Save Draft
         </button>
-        <button
-          onClick={onSend}
-          className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1684EF] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1684EF]"
-        >
+        <button className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1684EF] px-4 py-2 text-xs font-semibold text-white hover:bg-[#1684EF]">
           <Send /> Send to {subscribersCount.toLocaleString()} Subscribers
         </button>
 
