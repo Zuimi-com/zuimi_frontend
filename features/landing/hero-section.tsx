@@ -43,7 +43,7 @@ export const HeroSection = () => {
             Shared with the world.
           </h1>
 
-          <p className="text-white/90 text-lg md:text-xl max-w-2xl">
+          <p className="text-white/90 text-lg md:text-2xl max-w-xl mx-auto">
             Zuimi is a streaming and media platform for powerful African
             storytelling built for film lovers and creators
           </p>
