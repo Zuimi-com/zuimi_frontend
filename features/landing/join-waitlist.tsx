@@ -1,9 +1,13 @@
+import { ChevronRight } from "lucide-react";
 import Image from "next/image";
 import React from "react";
 
 const JoinWaitlist: React.FC = () => {
   return (
-    <section className="w-full bg-black text-white py-20 px-6 relative min-h-165" id="contact">
+    <section
+      className="w-full bg-[#141414] text-white py-20 px-6 relative min-h-165"
+      id="contact"
+    >
       <Image
         src="/deco1.png"
         alt="Zuimi background image"
@@ -38,13 +42,13 @@ const JoinWaitlist: React.FC = () => {
             <input
               type="text"
               placeholder="First Name"
-              className="w-full bg-transparent border border-gray-700 rounded-lg px-4 py-3 outline-none focus:border-pink-500 transition"
+              className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
             />
 
             <input
               type="text"
               placeholder="Last Name"
-              className="w-full bg-transparent border border-gray-700 rounded-lg px-4 py-3 outline-none focus:border-pink-500 transition"
+              className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
             />
           </div>
 
@@ -52,20 +56,21 @@ const JoinWaitlist: React.FC = () => {
           <input
             type="email"
             placeholder="Email address"
-            className="w-full bg-transparent border border-gray-700 rounded-lg px-4 py-3 outline-none focus:border-pink-500 transition"
+            className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
           />
 
           {/* Button */}
           <button
             type="submit"
-            className="w-full py-4 rounded-xl font-semibold text-lg bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition"
+            className="w-full rounded-xl font-semibold text-lg bg-gradient-to-r flex justify-center py-6 items-center group from-blue-500 lg:text-2xl via-pink-500 to-orange-400 hover:opacity-90 transition"
           >
-            Join the Waitlist →
+            Join the Waitlist
+            <ChevronRight className="group-hover:translate-x-1 duration-300 transition-transform size-6" />
           </button>
         </form>
 
         {/* Footer text */}
-        <p className="text-gray-500 text-sm mt-6">
+        <p className="text-white text-sm mt-6">
           No spam, unsubscribe anytime. We respect your privacy.
         </p>
       </div>

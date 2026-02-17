@@ -139,6 +139,9 @@
   .zuimi-gradient {
     @apply bg-linear-to-b from-[#000000] to-[#101727];
   }
+  .gradient {
+    @apply bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400
+  }
 }
 
 .tiptap {
