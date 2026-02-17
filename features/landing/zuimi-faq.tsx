@@ -1,4 +1,5 @@
-"use client"
+"use client";
+import { Plus } from "lucide-react";
 import React, { useState } from "react";
 
 type FAQItem = {
@@ -10,45 +11,45 @@ const faqData: FAQItem[] = [
   {
     question: "What is Zuimi?",
     answer:
-      "Zuimi is a streaming and media platform dedicated to showcasing African cinema, connecting creators with audiences, and preserving authentic cultural storytelling.",
+      "Zuimi is your home for African movies a streaming platform that brings together curated films from Nollywood and Across the continent, all in one place.",
   },
   {
-    question: "Who is Zuimi for?",
+    question: "Can I Watch offline?",
     answer:
-      "Zuimi is for film lovers, storytellers, producers, and anyone passionate about discovering authentic African stories and supporting local creators.",
+      "Yes! Download your favorite movies and watch them whenever you want, even without internet",
   },
   {
-    question: "Is Zuimi only for African audiences?",
+    question: "Does Zuimi use a subscription model?",
     answer:
-      "No. Zuimi is built for both local and global audiences who want access to rich, diverse, and culturally honest African films.",
+      "No, Zuimi uses a pay-on-demand model, putting you in control of your watch time.Pay only for films you want when you want.",
   },
   {
-    question: "Can filmmakers submit their films?",
+    question: "How does Zuimi protect movies from piracy",
     answer:
-      "Yes. Zuimi provides opportunities for filmmakers to showcase their work and reach new audiences through our platform.",
+      "Our platform uses secure streaming technology that ensures movies are protected, keeping both creators and viewers safe.",
   },
   {
-    question: "Is Zuimi free to use?",
+    question: "Does Zuimi only feature Nollywood films?",
     answer:
-      "Zuimi offers different access tiers. Some content may be free, while premium films and features may require a subscription.",
-  },
-  {
-    question: "How do I stay updated?",
-    answer:
-      "You can join the waitlist or subscribe to updates to receive news about launches, new films, and exclusive platform features.",
+      "No, While we celebrate Nollywood, We also feature movie from across Africa to give you a rich and diverse viewing experience.",
   },
 ];
 
 const ZuimiFAQ: React.FC = () => {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndexes, setOpenIndexes] = useState<number[]>([]);
 
   const toggle = (index: number) => {
-    setOpenIndex(openIndex === index ? null : index);
+    setOpenIndexes(
+      (prev) =>
+        prev.includes(index)
+          ? prev.filter((i) => i !== index) // close if open
+          : [...prev, index], // open if closed
+    );
   };
 
   return (
     <section className="bg-black text-white py-20 px-6">
-      <div className="max-w-3xl mx-auto">
+      <div className="max-w-6xl mx-auto">
         {/* Heading */}
         <h2 className="text-4xl font-bold text-center mb-12">
           Frequently Asked Questions
@@ -57,36 +58,37 @@ const ZuimiFAQ: React.FC = () => {
         {/* FAQ List */}
         <div className="space-y-4">
           {faqData.map((item, index) => {
-            const isOpen = openIndex === index;
+            const isOpen = openIndexes.includes(index);
 
             return (
               <div
                 key={index}
-                className="border border-gray-800 rounded-xl overflow-hidden transition"
+                className=" border-gray-800 rounded-md overflow-hidden transition"
               >
                 {/* Question */}
                 <button
                   onClick={() => toggle(index)}
-                  className="w-full flex items-center justify-between text-left px-6 py-5 hover:bg-white/5 transition cursor-pointer"
+                  className="w-full flex items-center justify-between text-left px-6 py-5  transition cursor-pointer bg-[#2D2D2D] overflow-hidden h-full"
                 >
                   <span className="font-medium text-lg">{item.question}</span>
 
-                  {/* Icon */}
-                  <span className="text-2xl font-light">
-                    {isOpen ? "−" : "+"}
-                  </span>
+                  <Plus
+                    className={`transition-transform duration-300 ${
+                      isOpen ? "rotate-45" : "rotate-0"
+                    }`}
+                  />
                 </button>
 
                 {/* Answer */}
                 <div
-                  className={`grid transition-all duration-300 ease-in-out ${
+                  className={`grid transition-all bg-[#2D2D2D] duration-300 ease-in-out ${
                     isOpen
-                      ? "grid-rows-[1fr] opacity-100"
+                      ? "grid-rows-[1fr] opacity-100 mt-0.5"
                       : "grid-rows-[0fr] opacity-0"
                   }`}
                 >
                   <div className="overflow-hidden">
-                    <p className="px-6 pb-6 text-gray-400 leading-relaxed">
+                    <p className="px-6 py-6 text-white leading-relaxed">
                       {item.answer}
                     </p>
                   </div>

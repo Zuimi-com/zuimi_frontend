@@ -16,16 +16,21 @@ export const HeroSection = () => {
         className="object-cover -z-10"
       />
 
+      <div className="absolute z-100 bottom-0 h-1  gradient w-full left-0 right-0" />
+
       {/* Navbar */}
       <nav className="sticky top-0 z-50 w-full flex justify-between items-center px-6 md:px-12 lg:px-20 py-6">
         <Image src="/zuimi-logo.svg" alt="Zuimi logo" width={160} height={60} />
 
         <a
           href="#contact"
-          className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
+          className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r group from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
         >
           Join Us
-          <ChevronRight size={18} />
+          <ChevronRight
+            size={18}
+            className="group-hover:translate-x-1 duration-300 transition-transform"
+          />
         </a>
       </nav>
 
@@ -38,17 +43,20 @@ export const HeroSection = () => {
             Shared with the world.
           </h1>
 
-          <p className="text-white/90 text-lg md:text-xl max-w-2xl">
+          <p className="text-white/90 text-lg md:text-2xl max-w-xl mx-auto">
             Zuimi is a streaming and media platform for powerful African
             storytelling built for film lovers and creators
           </p>
 
           <a
             href="#contact"
-            className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
+            className="px-8 py-3 rounded-xl font-semibold text-sm md:text-base bg-gradient-to-r group from-blue-500 via-pink-500 to-orange-400 hover:opacity-90 transition flex items-center gap-2"
           >
             Join Us
-            <ChevronRight size={18} />
+            <ChevronRight
+              size={18}
+              className="group-hover:translate-x-1 duration-300 transition-transform"
+            />
           </a>
         </div>
       </div>
