@@ -15,7 +15,7 @@ const data = [
     hoverIcon: "/television-white-bg.png",
     title: "Enjoy streaming everywhere ",
     color: "#F22F7A",
-    desc: "SSeamlessly switch between your phone, Tablet, Laptop and Smart TV.",
+    desc: "Seamlessly switch between your phone, Tablet, Laptop and Smart TV.",
   },
   {
     icon: "/download.svg",

@@ -1,8 +1,57 @@
+"use client";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-import React from "react";
+import React, { useState } from "react";
+import { useSubcribeToWaitlist } from "../dashboard/service/subscribers";
+import toast from "react-hot-toast";
 
 const JoinWaitlist: React.FC = () => {
+  const subscribe = useSubcribeToWaitlist();
+  const [form, setForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+  });
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setForm((prev) => ({
+      ...prev,
+      [e.target.name]: e.target.value,
+    }));
+  };
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!form.firstName.trim() || !form.lastName.trim() || !form.email.trim()) {
+      toast.error("All fields are required");
+      return;
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(form.email)) {
+      toast.error("Please enter a valid email");
+      return;
+    }
+
+    try {
+      await subscribe.mutateAsync({
+        email: form.email,
+        last_name: form.lastName,
+        first_name: form.firstName,
+      });
+
+      toast.success("Successfully joined waitlist 🎉");
+
+      setForm({
+        firstName: "",
+        lastName: "",
+        email: "",
+      });
+    } catch (err) {
+      toast.error("Something went wrong");
+    }
+  };
+
   return (
     <section
       className="w-full bg-[#141414] text-white py-20 px-6 relative min-h-165"
@@ -36,35 +85,46 @@ const JoinWaitlist: React.FC = () => {
         </p>
 
         {/* Form */}
-        <form className="space-y-5">
-          {/* Name row */}
+        <form className="space-y-5" onSubmit={handleSubmit}>
           <div className="grid md:grid-cols-2 gap-5">
             <input
+              name="firstName"
+              value={form.firstName}
+              onChange={handleChange}
               type="text"
               placeholder="First Name"
-              className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
+              className="w-full bg-transparent border border-gray-600 px-4 py-3 outline-none focus:border-pink-500 transition"
+              required
             />
 
             <input
+              name="lastName"
+              value={form.lastName}
+              onChange={handleChange}
               type="text"
               placeholder="Last Name"
-              className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
+              className="w-full bg-transparent border border-gray-600 px-4 py-3 outline-none focus:border-pink-500 transition"
+              required
             />
           </div>
 
-          {/* Email */}
           <input
+            name="email"
+            value={form.email}
+            onChange={handleChange}
             type="email"
             placeholder="Email address"
-            className="w-full bg-transparent border border-gray-600  px-4 py-3 outline-none focus:border-pink-500 transition"
+            className="w-full bg-transparent border border-gray-600 px-4 py-3 outline-none focus:border-pink-500 transition"
+            required
           />
 
-          {/* Button */}
           <button
             type="submit"
-            className="w-full rounded-xl font-semibold text-lg bg-gradient-to-r flex justify-center py-6 items-center group from-blue-500 lg:text-2xl via-pink-500 to-orange-400 hover:opacity-90 transition"
+            disabled={subscribe.isPending}
+            className="w-full rounded-xl font-semibold text-lg bg-gradient-to-r flex justify-center py-6 items-center group from-blue-500 lg:text-2xl via-pink-500 to-orange-400 hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
           >
-            Join the Waitlist
+            {subscribe.isPending ? "Joining..." : "Join the Waitlist"}
+
             <ChevronRight className="group-hover:translate-x-1 duration-300 transition-transform size-6" />
           </button>
         </form>
