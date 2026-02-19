@@ -5,24 +5,28 @@ import React from "react";
 const data = [
   {
     icon: "/movie.svg",
+    hoverIcon: "/movie-white-bg.png",
     title: "Premium African Content",
     color: "#F78912",
     desc: "Access a curated library of high-quality African films.",
   },
   {
     icon: "/television.svg",
+    hoverIcon: "/television-white-bg.png",
     title: "Enjoy streaming everywhere ",
     color: "#F22F7A",
-    desc: "SSeamlessly switch between your phone, Tablet, Laptop and Smart TV.",
+    desc: "Seamlessly switch between your phone, Tablet, Laptop and Smart TV.",
   },
   {
     icon: "/download.svg",
+    hoverIcon: "/download-white-bg.png",
     title: "Download movies to watch offline",
     color: "#1684EF",
     desc: "Save your favorite movies offline for to wath later..",
   },
   {
     icon: "/community.svg",
+    hoverIcon: "/community-white-bg.png",
     color: "#F78912",
     title: "Community Interaction",
     desc: "Join communities discussing films to get closer to your favorite filmmakers and fans.",
@@ -49,22 +53,30 @@ export const KeyFeatures: React.FC = () => {
             {data.map((item, index) => (
               <div
                 key={index}
-                // style={{ "--hoverColor": item.color } as React.CSSProperties} hover:bg-[var(--hoverColor)]
-                className="bg-[#2D2D2D] rounded-[16px] p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col text-left space-y-1 hover:-translate-y-2 "
+                style={{ "--hoverColor": item.color } as React.CSSProperties}
+                className="group bg-[#2D2D2D] rounded-[16px] p-6 shadow-sm hover:shadow-md transition-all duration-300 flex flex-col text-left space-y-1 hover:-translate-y-2 hover:bg-[var(--hoverColor)]"
               >
-                <Image
-                  src={item.icon}
-                  alt={item.title}
-                  width={46.67}
-                  height={46.67}
-                  className="mb-9.75"
-                />
+                <div className="relative w-[46.67px] h-[46.67px] mb-9.75">
+                  <Image
+                    src={item.icon}
+                    alt={item.title}
+                    fill
+                    className="object-contain group-hover:hidden"
+                  />
+
+                  <Image
+                    src={item.hoverIcon}
+                    alt={item.title}
+                    fill
+                    className="object-contain hidden group-hover:block"
+                  />
+                </div>
 
                 <h3 className="text-lg md:text-2xl font-bold text-white">
                   {item.title}
                 </h3>
 
-                <p className="text-sm md:text-base text-white group-hover:font-semibold leading-relaxed">
+                <p className="text-sm md:text-base text-white  leading-relaxed">
                   {item.desc}
                 </p>
               </div>
