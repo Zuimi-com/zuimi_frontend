@@ -4,6 +4,7 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useSubcribeToWaitlist } from "../dashboard/service/subscribers";
 import toast from "react-hot-toast";
+import { error } from "console";
 
 const JoinWaitlist: React.FC = () => {
   const subscribe = useSubcribeToWaitlist();
@@ -32,24 +33,31 @@ const JoinWaitlist: React.FC = () => {
       toast.error("Please enter a valid email");
       return;
     }
-
-    try {
-      await subscribe.mutateAsync({
+    subscribe.mutate(
+      {
         email: form.email,
         last_name: form.lastName,
         first_name: form.firstName,
-      });
+      },
+      {
+        onSuccess: () => {
+          toast.success("Successfully joined waitlist 🎉");
+          setForm({
+            firstName: "",
+            lastName: "",
+            email: "",
+          });
+        },
+        onError: (err: any) => {
+          const message =
+            err?.response?.data?.error ||
+            err?.response?.data?.message ||
+            "Something went wrong";
 
-      toast.success("Successfully joined waitlist 🎉");
-
-      setForm({
-        firstName: "",
-        lastName: "",
-        email: "",
-      });
-    } catch (err) {
-      toast.error("Something went wrong");
-    }
+          toast.error(message);
+        },
+      },
+    );
   };
 
   return (
