@@ -62,7 +62,7 @@ const JoinWaitlist: React.FC = () => {
 
   return (
     <section
-      className="w-full bg-[#141414] text-white py-20 px-6 relative min-h-165"
+      className="w-full rounded-[16px] max-w-6xl mx-auto bg-[#141414] text-white py-20 px-6 relative lg:min-h-165"
       id="contact"
     >
       <Image
@@ -70,23 +70,23 @@ const JoinWaitlist: React.FC = () => {
         alt="Zuimi background image"
         width={100}
         height={100}
-        className="object-cover absolute right-0 bottom-0 w-76 h-76 hidden lg:block"
+        className="object-cover absolute right-0 bottom-0 md:w-76 md:h-76 w-[88.35px] h-[88.06px]"
       />
       <Image
         src="/deco2.png"
         alt="Zuimi background image"
         width={100}
         height={100}
-        className="object-cover absolute left-0 top-0 w-76 h-76 hidden lg:block"
+        className="object-cover absolute left-0 top-0 md:w-76 md:h-76 w-[88.35px] h-[88.06px]"
       />
       <div className="max-w-3xl mx-auto text-center">
         {/* Heading */}
-        <h2 className="text-4xl md:text-5xl font-bold mb-6">
+        <h2 className="text-[28px] md:text-5xl font-bold mb-2">
           Be a part of our Story
         </h2>
 
         {/* Subtitle */}
-        <p className="text-gray-400 text-base md:text-lg mb-10 leading-relaxed">
+        <p className="text-gray-400 text-[10px] md:text-lg mb-10 leading-relaxed">
           Be part of the our story as we work to strengthen African cinema.
           <br />
           Sign up to get exclusive access and updates on Zuimi
@@ -94,7 +94,7 @@ const JoinWaitlist: React.FC = () => {
 
         {/* Form */}
         <form className="space-y-5" onSubmit={handleSubmit}>
-          <div className="grid md:grid-cols-2 gap-5">
+          <div className="grid grid-cols-2 gap-5">
             <input
               name="firstName"
               value={form.firstName}
@@ -129,7 +129,7 @@ const JoinWaitlist: React.FC = () => {
           <button
             type="submit"
             disabled={subscribe.isPending}
-            className="w-full rounded-xl font-semibold text-lg bg-gradient-to-r flex justify-center py-6 items-center group from-blue-500 lg:text-2xl via-pink-500 to-orange-400 hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
+            className="w-full rounded-xl font-semibold text-lg bg-gradient-to-r flex justify-center py-3 px-4 md:px-10 md:py-4 items-center group from-blue-500 lg:text-2xl via-pink-500 to-orange-400 hover:opacity-90 transition disabled:opacity-50 cursor-pointer"
           >
             {subscribe.isPending ? "Joining..." : "Join the Waitlist"}
 

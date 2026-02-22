@@ -3,15 +3,15 @@ import Link from "next/link";
 import React from "react";
 
 const navLinks = [
-  { href: "/", label: "About" },
+  { href: "#about", label: "About" },
   { href: "#contact", label: "Contact" },
   { href: "#features", label: "Features" },
 ];
 
 const socialLinks = [
-  { icon: "/X.svg", label: "X", href: "#" },
-  { icon: "/Facebook.svg", label: "Facebook", href: "#" },
-  { icon: "/Instagram.svg", label: "Instagram", href: "#" },
+  { icon: "/x.svg", label: "X", href: "#" },
+  // { icon: "/Facebook.svg", label: "Facebook", href: "#" },
+  { icon: "instagram.svg", label: "Instagram", href: "#" },
 ];
 
 export const Footer = () => {
@@ -37,9 +37,11 @@ export const Footer = () => {
             <Link
               key={link.label}
               href={link.href}
-              className="text-base md:text-lg font-medium text-white"
+              className="text-base md:text-lg font-medium group text-white"
             >
-              {link.label}
+              <span className="transition group-hover:bg-gradient-to-r group-hover:from-blue-500 group-hover:via-pink-500 group-hover:to-orange-400 group-hover:bg-clip-text group-hover:text-transparent duration-300">
+                {link.label}
+              </span>
             </Link>
           ))}
         </nav>
@@ -51,13 +53,13 @@ export const Footer = () => {
               key={social.label}
               href={social.href}
               aria-label={social.label}
-              className="w-9 h-9 flex items-center justify-center rounded-full bg-black transition"
+              className="w-9 h-9 flex items-center justify-center rounded-full transition"
             >
               <Image
                 src={social.icon}
                 alt={social.label}
-                width={25}
-                height={25}
+                width={40}
+                height={40}
               />
             </Link>
           ))}
