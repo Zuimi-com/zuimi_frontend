@@ -16,7 +16,11 @@ export default function Home() {
         <WhyZuimiExist />
         <ZuimiDifference />
         <MoreStreaming />
+      </div>
+      <div className="py-[80px] lg:space-y-10 space-y-4 bg-black">
         <JoinWaitlist />
+      </div>
+      <div className="px-6 lg:space-y-10 space-y-4 bg-black">
         <ZuimiFAQ />
       </div>
       <Footer />

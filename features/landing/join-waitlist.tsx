@@ -62,7 +62,7 @@ const JoinWaitlist: React.FC = () => {
 
   return (
     <section
-      className="w-full rounded-[16px] bg-[#141414] text-white py-20 px-6 relative lg:min-h-165"
+      className="w-full bg-[#141414] text-white py-20 px-6 relative lg:min-h-165"
       id="contact"
     >
       <Image
