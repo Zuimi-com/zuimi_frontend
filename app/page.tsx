@@ -11,12 +11,18 @@ export default function Home() {
   return (
     <main className="">
       <HeroSection />
-      <KeyFeatures />
-      <WhyZuimiExist />
-      <ZuimiDifference />
-      <MoreStreaming />
-      <JoinWaitlist />
-      <ZuimiFAQ />
+      <div className="px-6 lg:space-y-10 space-y-4 bg-black">
+        <KeyFeatures />
+        <WhyZuimiExist />
+        <ZuimiDifference />
+        <MoreStreaming />
+      </div>
+      <div className="py-[80px] lg:space-y-10 space-y-4 bg-black">
+        <JoinWaitlist />
+      </div>
+      <div className="px-6 lg:space-y-10 space-y-4 bg-black">
+        <ZuimiFAQ />
+      </div>
       <Footer />
     </main>
   );

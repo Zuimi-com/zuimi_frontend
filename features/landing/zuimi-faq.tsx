@@ -48,10 +48,10 @@ const ZuimiFAQ: React.FC = () => {
   };
 
   return (
-    <section className="bg-black text-white py-20 px-6">
+    <section className="bg-black text-white py-20">
       <div className="max-w-6xl mx-auto">
         {/* Heading */}
-        <h2 className="text-4xl font-bold text-center mb-12">
+        <h2 className="text-[20px] md:text-[40px] font-bold mb-4 md:mb-12">
           Frequently Asked Questions
         </h2>
 
@@ -70,10 +70,12 @@ const ZuimiFAQ: React.FC = () => {
                   onClick={() => toggle(index)}
                   className="w-full flex items-center justify-between text-left px-6 py-5  transition cursor-pointer bg-[#2D2D2D] overflow-hidden h-full"
                 >
-                  <span className="font-medium text-lg">{item.question}</span>
+                  <span className="font-normal text-lg lg:text-[24px]">
+                    {item.question}
+                  </span>
 
                   <Plus
-                    className={`transition-transform duration-300 ${
+                    className={`transition-transform duration-300 w-[30px] h-[30px] shrink-0 ${
                       isOpen ? "rotate-45" : "rotate-0"
                     }`}
                   />
