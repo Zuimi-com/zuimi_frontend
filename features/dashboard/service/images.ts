@@ -36,7 +36,7 @@ export const useUploadLetterImages = () => {
 
     onSuccess: () => {
       // Refresh images list automatically
-      queryClient.invalidateQueries({ queryKey: ["broadcast"] });
+      queryClient.invalidateQueries({ queryKey: ["images"] });
     },
   });
 };
