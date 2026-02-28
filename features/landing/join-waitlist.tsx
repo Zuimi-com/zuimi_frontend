@@ -87,7 +87,7 @@ const JoinWaitlist: React.FC = () => {
 
         {/* Subtitle */}
         <p className="text-gray-400 text-[10px] md:text-lg mb-10 leading-relaxed">
-          Be part of the our story as we work to strengthen African cinema.
+          Be part of our story as we work to strengthen African cinema.
           <br />
           Sign up to get exclusive access and updates on Zuimi
         </p>
