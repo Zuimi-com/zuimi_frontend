@@ -1,8 +1,9 @@
 import axios from "axios";
 import Cookies from "js-cookie";
+import { getApiBaseUrl } from "@/lib/get-api-base-url";
 
 export const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: getApiBaseUrl(),
   withCredentials: true,
 });
 
