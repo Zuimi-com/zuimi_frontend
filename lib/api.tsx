@@ -1,6 +1,7 @@
 import axios, { AxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
 import Cookies from "js-cookie";
+import { getApiBaseUrl } from "@/lib/get-api-base-url";
 
 export type Row = {
   subject: string;
@@ -22,7 +23,7 @@ export type Record = {
   status: 'Active' | 'Inactive'
 }
 
-const Baseurl = process.env.NEXT_PUBLIC_API_URL || process.env.NEXT_PUBLIC_API_BASE_STAGING || 'http://localhost:8000';
+const Baseurl = getApiBaseUrl();
 
 
 async function apiRequest<T>(
