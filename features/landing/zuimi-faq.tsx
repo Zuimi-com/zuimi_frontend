@@ -31,7 +31,7 @@ const faqData: FAQItem[] = [
   {
     question: "Does Zuimi only feature Nollywood films?",
     answer:
-      "No, While we celebrate Nollywood, We also feature movies from across Africa giving you a rich and diverse viewing experience.",
+      "No. While we celebrate Nollywood, We also feature movies from across Africa, giving you a rich and diverse viewing experience.",
   },
 ];
 
