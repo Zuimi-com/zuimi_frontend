@@ -11,17 +11,17 @@ const faqData: FAQItem[] = [
   {
     question: "What is Zuimi?",
     answer:
-      "Zuimi is your home for African movies a streaming platform that brings together curated films from Nollywood and Across the continent, all in one place.",
+      "Zuimi is your home for African movies. A streaming platform that brings together curated films from Nollywood and across the continent, all in one place.",
   },
   {
     question: "Can I Watch offline?",
     answer:
-      "Yes! Download your favorite movies and watch them whenever you want, even without internet",
+      "Yes! Download your favorite movies and watch offline anytime.",
   },
   {
     question: "Does Zuimi use a subscription model?",
     answer:
-      "No, Zuimi uses a pay-on-demand model, putting you in control of your watch time.Pay only for films you want when you want.",
+      "No, Zuimi uses a pay-on-demand model, putting you in control of your watch time. Pay only for films you want when you want.",
   },
   {
     question: "How does Zuimi protect movies from piracy",
@@ -31,7 +31,7 @@ const faqData: FAQItem[] = [
   {
     question: "Does Zuimi only feature Nollywood films?",
     answer:
-      "No, While we celebrate Nollywood, We also feature movie from across Africa to give you a rich and diverse viewing experience.",
+      "No, While we celebrate Nollywood, We also feature movies from across Africa giving you a rich and diverse viewing experience.",
   },
 ];
 
