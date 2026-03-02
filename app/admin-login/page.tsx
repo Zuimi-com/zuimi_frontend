@@ -38,6 +38,11 @@ export default function Page() {
       {
         onSuccess: (data) => {
           Cookies.set("access", data.access, {
+            expires: 1,
+            secure: true,
+            sameSite: "strict",
+          });
+          Cookies.set("refresh_token", data.refresh, {
             expires: 7,
             secure: true,
             sameSite: "strict",
