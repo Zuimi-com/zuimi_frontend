@@ -1,8 +1,21 @@
+"use client";
+import { useGetNewsLetter } from "@/features/dashboard/service/newsletter";
+import SectionSkeleton from "./SectionSkeleton";
+import SubscribersTable, { SubscribersRow } from "./SubscribersHistory";
+
 export default function SubscribersOverview() {
-  return (
-    <div className="max-w-6xl">
-      <h1 className="text-2xl font-semibold text-gray-900 mb-2">Subscribers overview</h1>
-      <p className="text-sm text-gray-600">Charts and counts go here.</p>
-    </div>
-  );
+  const { data, isPending } = useGetNewsLetter();
+
+  if (isPending || !data) {
+    return <SectionSkeleton />;
+  }
+
+  const subscribers: SubscribersRow[] = data.map((data) => ({
+    subject: data.email,
+    dateSent: data.subscribed_at,
+    status: data.status,
+    openRate: data.openRate!,
+  }));
+
+  return <SubscribersTable rows={subscribers} />;
 }

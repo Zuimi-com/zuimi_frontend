@@ -1,5 +1,6 @@
 export type AdminSection =
-  | "dashboard"
-  | "newsletter-history"
-  | "compose-letter"
-  | "subscribers-overview";
+  | "/admin"
+  | "/admin/newsletter"
+  | "/admin/compose-letter"
+  | "/admin/subscribers"
+  | "/admin/images";

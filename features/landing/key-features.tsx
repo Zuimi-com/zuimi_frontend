@@ -1,134 +1,89 @@
 "use client";
-
-import React from "react";
 import Image from "next/image";
-import { motion, Variants } from "motion/react";
-import { JoinWaitlistCard } from "./join-waitlist-card";
+import React from "react";
 
 const data = [
   {
-    icon: "/movie-icon.svg",
+    icon: "/movie.svg",
+    hoverIcon: "/movie-white-bg.png",
     title: "Premium African Content",
+    color: "#F78912",
     desc: "Access a curated library of high-quality African films.",
   },
   {
-    icon: "/desktop.svg",
-    title: "Multi-Device Support",
-    desc: "Seamlessly switch between your phone, tablet, laptop and smart TV.",
+    icon: "/television.svg",
+    hoverIcon: "/television-white-bg.png",
+    title: "Enjoy streaming everywhere ",
+    color: "#F22F7A",
+    desc: "Seamlessly switch between your phone, Tablet, Laptop and Smart TV.",
   },
   {
-    icon: "/Reward.svg",
-    title: "Rewarding Filmmakers",
-    desc: "Our ecosystem ensures creators are fairly compensated and celebrated for their incredible work.",
+    icon: "/download.svg",
+    hoverIcon: "/download-white-bg.png",
+    title: "Download movies to watch offline",
+    color: "#1684EF",
+    desc: "Save your favorite movies offline to watch later.",
   },
   {
-    icon: "/globe-sphere.svg",
-    title: "Local Roots, Global Reach",
-    desc: "Proudly Nigerian built with the ambition to showcase African cinema to the world.",
+    icon: "/community.svg",
+    hoverIcon: "/community-white-bg.png",
+    color: "#F78912",
+    title: "Community Interaction",
+    desc: "Join communities discussing films to get closer to your favorite filmmakers and fans.",
   },
 ];
 
-const sectionVariants: Variants = {
-  hidden: {},
-  visible: {
-    transition: {
-      staggerChildren: 0.15,
-      delayChildren: 0.2,
-    },
-  },
-};
-
-const cardVariants: Variants = {
-  hidden: {
-    opacity: 0,
-    y: 40,
-    scale: 0.92,
-  },
-  visible: {
-    opacity: 1,
-    y: 0,
-    scale: 1,
-    transition: {
-      duration: 0.6,
-      ease: [0.22, 1, 0.36, 1],
-    },
-  },
-};
-
 export const KeyFeatures: React.FC = () => {
   return (
-    <section className="min-h-screen flex flex-col">
-      <div className="w-full bg-linear-to-b from-[#000000] to-[#101727] py-16 px-6">
-        <div className="max-w-7xl mx-auto space-y-12 ">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.3 }}
-            transition={{
-              duration: 0.7,
-              ease: [0.16, 1, 0.3, 1],
-            }}
-            className="max-w-3xl space-y-8 mx-auto"
-          >
-            <h1 className="font-bold text-white text-center text-pretty text-[32px] md:text-[40px]">
-              Everything You Need for the Perfect Streaming Experience
+    <section className="flex flex-col" id="features">
+      <div className="w-full py-16">
+        <div className="max-w-6xl mx-auto space-y-12 ">
+          <div className="max-w-3xl space-y-2 lg:space-y-[40px] mx-auto">
+            <h1 className="font-semibold text-white text-center text-pretty text-[24px] md:text-[50px] leading-tight max-w-[820px] mx-auto">
+              Everything you need for the Perfect streaming experience
             </h1>
-            <p className="text-white text-2xl text-center">
+            <p className="text-white text-[12px] md:text-[20px] text-center">
               We are building the ultimate platform for movie enthusiasts with
               features designed to enhance your viewing experience.
             </p>
-          </motion.div>
+          </div>
 
           {/* Features Grid (POP UP ON SCROLL) */}
-          <motion.div
-            variants={sectionVariants}
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true, amount: 0.2 }}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 w-full mt-10 md:mt-20"
-          >
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 w-full mt-10 md:mt-20">
             {data.map((item, index) => (
-              <motion.div
+              <div
                 key={index}
-                variants={cardVariants}
-                whileHover={{ y: -6 }}
-                className="bg-transparent rounded-2xl p-6 shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col text-left space-y-4 border-2 border-white"
+                style={{ "--hoverColor": item.color } as React.CSSProperties}
+                className="group bg-[#2D2D2D] rounded-[16px] p-6 shadow-sm hover:shadow-md transition-all duration-300 ease-linear flex flex-col text-left space-y-1 hover:bg-[var(--hoverColor)]"
               >
-                <div className="w-14 h-14 flex items-center justify-center rounded-2xl bg-zuimi-blue">
+                <div className="relative w-[46.67px] h-[46.67px] mb-9.75">
                   <Image
                     src={item.icon}
                     alt={item.title}
-                    width={28}
-                    height={28}
+                    fill
+                    className="object-contain group-hover:hidden"
+                  />
+
+                  <Image
+                    src={item.hoverIcon}
+                    alt={item.title}
+                    fill
+                    className="object-contain hidden group-hover:block"
                   />
                 </div>
 
-                <h3 className="text-lg font-semibold text-zuimi-gray">
+                <h3 className="text-lg md:text-2xl font-bold text-white">
                   {item.title}
                 </h3>
 
-                <p className="text-sm text-zuimi-gray leading-relaxed">
+                <p className="text-sm md:text-base text-white  leading-relaxed">
                   {item.desc}
                 </p>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
-
-      {/* CTA */}
-      <motion.div
-        initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true, amount: 0.3 }}
-        transition={{
-          duration: 0.7,
-          ease: [0.16, 1, 0.3, 1],
-        }}
-        className="bg-linear-to-b to-[#000000] from-[#101727] py-16 px-6"
-      >
-        <JoinWaitlistCard />
-      </motion.div>
     </section>
   );
 };
