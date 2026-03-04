@@ -16,11 +16,7 @@ export const WhyZuimiExist = () => {
         className="object-cover object-center"
       />
 
-<<<<<<< HEAD
       <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/50 to-transparent lg:hidden" />
-=======
-      <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent lg:hidden" />
->>>>>>> 7f0d28adf7d5ad4212a9b6cd5ebdb3d79169fcde
       {/* Content Container */}
       <div className="relative  z-10 flex justify-end min-h-125 lg:mt-30 -mt-5">
         <div className="max-w-[508px] space-y-2 lg:space-y-6  p-10 rounded-2xl lg:mr-30">
