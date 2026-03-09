@@ -1,8 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
 import React from "react";
-import xIcon from "@/public/X.svg";
-import instagramIcon from "@/public/Instagram.svg";
+import xIcon from "@/public/x.svg";
+import instagramIcon from "@/public/instagram.svg";
 
 const navLinks = [
   { href: "#about", label: "About" },
