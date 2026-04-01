@@ -11,9 +11,9 @@ const navLinks = [
 ];
 
 const socialLinks = [
-  { icon: xIcon, label: "X", href: "#" },
+  { icon: xIcon, label: "X", href: "https://x.com/zuimi_ng" },
   // { icon: "/Facebook.svg", label: "Facebook", href: "#" },
-  { icon: instagramIcon, label: "Instagram", href: "#" },
+  { icon: instagramIcon, label: "Instagram", href: "https://www.instagram.com/zuimi_ng?igsh=MTAzbDBjZmJwbWhrbA==" },
 ];
 
 export const Footer = () => {
