@@ -70,7 +70,7 @@ export const HeroSection = () => {
 
           <a
             href="#contact"
-            className="px-4 py-2 mt-3 rounded-[8px] text-[18px] lg:text-[24px] font-semibold bg-gradient-to-r group from-[#1683EE] via-[#F12F7A] to-[#F68812] hover:opacity-90 md:text-[24px] text-white transition flex items-center gap-2 mb-[130px]"
+            className="px-4 py-3 sm:pr-4 sm:pl-6 mt-3 rounded-[8px] text-[18px] lg:text-[24px] font-semibold bg-gradient-to-r group from-[#1683EE] via-[#F12F7A] to-[#F68812] hover:opacity-90 md:text-[24px] text-white transition flex items-center gap-2 mb-[130px] leading-6"
           >
             Join Us
             <ChevronRight

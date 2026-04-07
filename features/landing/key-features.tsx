@@ -39,8 +39,8 @@ export const KeyFeatures: React.FC = () => {
       <div className="w-full py-16">
         <div className="max-w-6xl mx-auto space-y-12 ">
           <div className="max-w-3xl space-y-2 lg:space-y-[40px] mx-auto">
-            <h1 className="font-semibold text-white text-center text-pretty text-[24px] md:text-[50px] leading-tight max-w-[820px] mx-auto">
-              Everything you need for the Perfect streaming experience
+            <h1 className="font-semibold text-white text-center text-[24px] md:text-[50px] leading-tight max-w-[820px] mx-auto">
+              Everything you need for the <br className="sm:hidden" /> Perfect streaming experience
             </h1>
             <p className="text-white text-[12px] md:text-[20px] text-center">
               We are building the ultimate platform for movie enthusiasts with
