@@ -17,7 +17,7 @@ import {
   useUpdateDirector,
   useUpdateGenre,
 } from "@/features/dashboard/service/movie-catalog";
-import { Loader2, Pencil, Plus, Power } from "lucide-react";
+import { AlertCircle, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -79,6 +79,81 @@ const getErrorMessage = (error: unknown): string => {
   return "Request failed";
 };
 
+function ConfirmDialog({
+  isOpen,
+  title,
+  description,
+  confirmText,
+  cancelText,
+  isDangerous,
+  isLoading,
+  onConfirm,
+  onCancel,
+}: {
+  isOpen: boolean;
+  title: string;
+  description: string;
+  confirmText: string;
+  cancelText: string;
+  isDangerous: boolean;
+  isLoading: boolean;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+        <div className="mb-4 flex items-start gap-3">
+          <div
+            className={`flex h-10 w-10 items-center justify-center rounded-full ${
+              isDangerous ? "bg-red-100" : "bg-blue-100"
+            }`}
+          >
+            {isDangerous ? (
+              <AlertCircle className="h-6 w-6 text-red-600" />
+            ) : (
+              <Check className="h-6 w-6 text-blue-600" />
+            )}
+          </div>
+          <div>
+            <h3 className="font-semibold text-slate-900">{title}</h3>
+            <p className="mt-1 text-sm text-slate-600">{description}</p>
+          </div>
+        </div>
+
+        <div className="flex gap-3">
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isLoading}
+            className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50 disabled:opacity-50"
+          >
+            {cancelText}
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            disabled={isLoading}
+            className={`flex-1 inline-flex items-center justify-center rounded-lg px-4 py-2 text-sm font-medium text-white transition disabled:opacity-50 ${
+              isDangerous
+                ? "bg-red-600 hover:bg-red-700"
+                : "bg-blue-600 hover:bg-blue-700"
+            }`}
+          >
+            {isLoading ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              confirmText
+            )}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function EntitySection({
   title,
   description,
@@ -99,11 +174,16 @@ function EntitySection({
     imageFile: null,
   });
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
+  const [deactivateConfirm, setDeactivateConfirm] = useState<string | null>(null);
+  const [deactivateLoading, setDeactivateLoading] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(true);
 
   const activeCount = useMemo(
     () => rows.filter((item) => item.status === "active").length,
     [rows],
   );
+
+  const inactiveCount = rows.length - activeCount;
 
   const resetForm = () => {
     setEditingId(null);
@@ -142,10 +222,10 @@ function EntitySection({
 
       if (editingId) {
         await onUpdate(editingId, payload);
-        toast.success(`${title.slice(0, -1)} updated`);
+        toast.success(`${title.slice(0, -1)} updated successfully`);
       } else {
         await onCreate(payload);
-        toast.success(`${title.slice(0, -1)} created`);
+        toast.success(`${title.slice(0, -1)} added successfully`);
       }
 
       resetForm();
@@ -154,223 +234,375 @@ function EntitySection({
     }
   };
 
-  const handleDeactivate = async (id: string) => {
+  const handleDeactivateClick = async () => {
+    if (!deactivateConfirm) return;
+
+    setDeactivateLoading(true);
     try {
-      await onDeactivate(id);
-      toast.success(`${title.slice(0, -1)} deactivated`);
+      await onDeactivate(deactivateConfirm);
+      toast.success(`${title.slice(0, -1)} deactivated successfully`);
+      setDeactivateConfirm(null);
     } catch (error) {
       toast.error(getErrorMessage(error));
+    } finally {
+      setDeactivateLoading(false);
     }
+  };
+
+  const getEntityIcon = () => {
+    if (title === "Directors") return <Crown className="h-5 w-5" />;
+    if (title === "Actors") return <Film className="h-5 w-5" />;
+    if (title === "Genres") return <Music className="h-5 w-5" />;
+    return <Plus className="h-5 w-5" />;
   };
 
   return (
     <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60">
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{title}</h2>
-          <p className="text-sm text-slate-600">{description}</p>
-        </div>
+      {/* Header */}
+      <div className="bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+              {getEntityIcon()}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                {title}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">{description}</p>
+            </div>
+          </div>
 
-        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
-          <span className="text-emerald-600">{activeCount} active</span>
-          <span className="text-slate-300">/</span>
-          <span className="text-amber-600">{rows.length - activeCount} inactive</span>
+          <div className="flex flex-col items-end gap-3">
+            <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-slate-900">{activeCount}</span>
+                <span className="text-slate-600">active</span>
+              </div>
+              {inactiveCount > 0 && (
+                <>
+                  <div className="h-3 border-l border-slate-300" />
+                  <div className="flex items-center gap-1">
+                    <div className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="font-semibold text-slate-900">{inactiveCount}</span>
+                    <span className="text-slate-600">inactive</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              {isExpanded ? "Hide" : "Show"} details
+            </button>
+          </div>
         </div>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="grid gap-3 border-y border-slate-100 bg-slate-50/70 px-6 py-4 md:grid-cols-12"
-      >
-        <div className={supportsImage ? "md:col-span-3" : "md:col-span-4"}>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {primaryLabel}
-          </label>
-          <input
-            value={form.primary}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, primary: event.target.value }))
-            }
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
-            placeholder={`Enter ${primaryLabel.toLowerCase()}`}
-          />
-        </div>
+      {isExpanded && (
+        <>
+          {/* Form Section */}
+          <form
+            onSubmit={handleSubmit}
+            className="border-y border-slate-100 bg-slate-50/70 px-6 py-5"
+          >
+            <div className="mb-4 flex items-center gap-2">
+              <Plus className="h-4 w-4 text-slate-600" />
+              <span className="text-sm font-semibold text-slate-700">
+                {editingId ? "Edit entry" : "Add new entry"}
+              </span>
+            </div>
 
-        <div className={supportsImage ? "md:col-span-4" : "md:col-span-5"}>
-          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-            {secondaryLabel}
-          </label>
-          <input
-            value={form.secondary}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, secondary: event.target.value }))
-            }
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
-            placeholder={`Optional ${secondaryLabel.toLowerCase()}`}
-          />
-        </div>
-
-        {supportsImage && (
-          <div className="md:col-span-3">
-            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
-              Profile Image
-            </label>
-            <input
-              type="file"
-              accept="image/png,image/jpeg,image/webp"
-              onChange={(event) => {
-                const selected = event.target.files?.[0] || null;
-                setForm((current) => ({ ...current, imageFile: selected }));
-              }}
-              className="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-slate-700"
-            />
-            <p className="mt-1 text-[11px] text-slate-500">
-              JPG, PNG, WEBP up to 5MB.
-            </p>
-            {localImagePreview && (
-              <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
-                <img
-                  src={localImagePreview}
-                  alt="Selected profile preview"
-                  className="h-12 w-12 rounded-lg border border-slate-200 object-cover"
+            <div className="grid gap-4 md:grid-cols-12">
+              <div className={supportsImage ? "md:col-span-3" : "md:col-span-4"}>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  {primaryLabel}
+                </label>
+                <input
+                  value={form.primary}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      primary: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder={`e.g., ${
+                    title === "Directors"
+                      ? "Christopher Nolan"
+                      : title === "Actors"
+                        ? "Leonardo DiCaprio"
+                        : "Action"
+                  }`}
                 />
-                <div className="min-w-0">
-                  <p className="truncate text-xs font-medium text-slate-800">
-                    {form.imageFile?.name}
+              </div>
+
+              <div className={supportsImage ? "md:col-span-4" : "md:col-span-5"}>
+                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  {secondaryLabel}
+                </label>
+                <input
+                  value={form.secondary}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      secondary: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder={`Optional ${secondaryLabel.toLowerCase()}`}
+                />
+              </div>
+
+              {supportsImage && (
+                <div className="md:col-span-3">
+                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                    Profile Image
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(event) => {
+                        const selected = event.target.files?.[0] || null;
+                        setForm((current) => ({
+                          ...current,
+                          imageFile: selected,
+                        }));
+                      }}
+                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-blue-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-blue-700"
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    JPG, PNG, or WEBP • Max 5MB
                   </p>
-                  <p className="text-[11px] text-slate-500">
-                    Preview before upload
-                  </p>
+
+                  {localImagePreview && (
+                    <div className="mt-3 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
+                      <img
+                        src={localImagePreview}
+                        alt="Selected preview"
+                        className="h-14 w-14 rounded-md border border-emerald-200 object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-slate-800">
+                          {form.imageFile?.name}
+                        </p>
+                        <p className="text-xs text-emerald-600 mt-1">
+                          ✓ Ready to upload
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
+              )}
+
+              <div
+                className={`flex items-end gap-2 ${
+                  supportsImage ? "md:col-span-2" : "md:col-span-3"
+                }`}
+              >
+                <button
+                  type="submit"
+                  disabled={isBusy || !form.primary.trim()}
+                  className="inline-flex w-full flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isBusy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  {editingId ? "Update" : "Add"}
+                </button>
+
+                {editingId && (
+                  <button
+                    type="button"
+                    onClick={resetForm}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+
+          {/* Data Section */}
+          <div className="px-6 py-6">
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="h-12 rounded-lg bg-gradient-to-r from-slate-200 to-slate-100 animate-pulse"
+                  />
+                ))}
+              </div>
+            ) : rows.length === 0 ? (
+              <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 py-8 text-center">
+                <div className="mb-3 flex justify-center">
+                  {title === "Directors" ? (
+                    <Crown className="h-8 w-8 text-slate-400" />
+                  ) : title === "Actors" ? (
+                    <Film className="h-8 w-8 text-slate-400" />
+                  ) : (
+                    <Music className="h-8 w-8 text-slate-400" />
+                  )}
+                </div>
+                <p className="mb-1 text-sm font-medium text-slate-600">
+                  No {title.toLowerCase()} yet
+                </p>
+                <p className="text-xs text-slate-500">
+                  Add your first entry using the form above to get started.
+                </p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-slate-200">
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Name
+                      </th>
+                      {supportsImage && (
+                        <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                          Image
+                        </th>
+                      )}
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Details
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Status
+                      </th>
+                      <th className="px-4 py-3 text-left text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Last Updated
+                      </th>
+                      <th className="px-4 py-3 text-right text-xs font-semibold uppercase tracking-wide text-slate-600">
+                        Actions
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rows.map((row) => (
+                      <tr
+                        key={row.id}
+                        className="border-b border-slate-100 transition hover:bg-blue-50/30 last:border-0"
+                      >
+                        <td className="px-4 py-3">
+                          <p className="font-semibold text-slate-900">
+                            {row.primary}
+                          </p>
+                        </td>
+                        {supportsImage && (
+                          <td className="px-4 py-3">
+                            {row.imageUrl ? (
+                              <img
+                                src={row.imageUrl}
+                                alt={row.primary}
+                                className="h-10 w-10 rounded-lg border border-slate-200 object-cover"
+                              />
+                            ) : (
+                              <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-dashed border-slate-300 bg-slate-50">
+                                <Camera className="h-4 w-4 text-slate-400" />
+                              </div>
+                            )}
+                          </td>
+                        )}
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-slate-600">
+                            {row.secondary ? (
+                              <span>{row.secondary}</span>
+                            ) : (
+                              <span className="italic text-slate-400">
+                                No details
+                              </span>
+                            )}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <span
+                            className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold gap-1.5 ${
+                              row.status === "active"
+                                ? "bg-emerald-100 text-emerald-700"
+                                : "bg-amber-100 text-amber-700"
+                            }`}
+                          >
+                            <span
+                              className={`h-2 w-2 rounded-full ${
+                                row.status === "active"
+                                  ? "bg-emerald-500"
+                                  : "bg-amber-500"
+                              }`}
+                            />
+                            {row.status === "active" ? "Active" : "Inactive"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3">
+                          <p className="text-sm text-slate-600">
+                            {extractDate(row.updatedAt)}
+                          </p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingId(row.id);
+                                setForm({
+                                  primary: row.primary,
+                                  secondary: row.secondary || "",
+                                  imageFile: null,
+                                });
+                              }}
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
+                            >
+                              <Pencil className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">Edit</span>
+                            </button>
+
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDeactivateConfirm(row.id)
+                              }
+                              disabled={
+                                row.status === "inactive" || isBusy
+                              }
+                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              <span className="hidden sm:inline">
+                                Deactivate
+                              </span>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             )}
           </div>
-        )}
+        </>
+      )}
 
-        <div className={supportsImage ? "flex items-end gap-2 md:col-span-2" : "flex items-end gap-2 md:col-span-3"}>
-          <button
-            type="submit"
-            disabled={isBusy}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-3 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {isBusy ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : (
-              <Plus className="h-4 w-4" />
-            )}
-            {editingId ? "Update" : "Add"}
-          </button>
-
-          {editingId && (
-            <button
-              type="button"
-              onClick={resetForm}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700"
-            >
-              Cancel
-            </button>
-          )}
-        </div>
-      </form>
-
-      <div className="overflow-x-auto px-6 py-4">
-        <table className="w-full min-w-155 text-sm">
-          <thead>
-            <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
-              <th className="px-2 py-3">Name</th>
-              {supportsImage && <th className="px-2 py-3">Image</th>}
-              <th className="px-2 py-3">Details</th>
-              <th className="px-2 py-3">Status</th>
-              <th className="px-2 py-3">Updated</th>
-              <th className="px-2 py-3 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
-              <tr>
-                <td
-                  colSpan={supportsImage ? 6 : 5}
-                  className="px-2 py-8 text-center text-sm text-slate-500"
-                >
-                  Loading {title.toLowerCase()}...
-                </td>
-              </tr>
-            ) : rows.length === 0 ? (
-              <tr>
-                <td
-                  colSpan={supportsImage ? 6 : 5}
-                  className="px-2 py-8 text-center text-sm text-slate-500"
-                >
-                  No records yet
-                </td>
-              </tr>
-            ) : (
-              rows.map((row) => (
-                <tr key={row.id} className="border-b border-slate-100 transition hover:bg-slate-50/70 last:border-0">
-                  <td className="px-2 py-3 font-semibold text-slate-800">{row.primary}</td>
-                  {supportsImage && (
-                    <td className="px-2 py-3">
-                      {row.imageUrl ? (
-                        <img
-                          src={row.imageUrl}
-                          alt={row.primary}
-                          className="h-10 w-10 rounded-xl border border-slate-200 object-cover"
-                        />
-                      ) : (
-                        <span className="text-xs text-slate-400">No image</span>
-                      )}
-                    </td>
-                  )}
-                  <td className="max-w-55 truncate px-2 py-3 text-slate-600">
-                    {row.secondary || "-"}
-                  </td>
-                  <td className="px-2 py-3">
-                    <span
-                      className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${
-                        row.status === "active"
-                          ? "bg-emerald-100 text-emerald-700"
-                          : "bg-amber-100 text-amber-700"
-                      }`}
-                    >
-                      {row.status}
-                    </span>
-                  </td>
-                  <td className="px-2 py-3 text-slate-600">{extractDate(row.updatedAt)}</td>
-                  <td className="px-2 py-3">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEditingId(row.id);
-                          setForm({
-                            primary: row.primary,
-                            secondary: row.secondary || "",
-                            imageFile: null,
-                          });
-                        }}
-                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                        Edit
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDeactivate(row.id)}
-                        disabled={row.status === "inactive" || isBusy}
-                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
-                      >
-                        <Power className="h-3.5 w-3.5" />
-                        Deactivate
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+      <ConfirmDialog
+        isOpen={!!deactivateConfirm}
+        title="Deactivate entry?"
+        description="This entry will be marked as inactive and won't appear in listings. You can reactivate it later."
+        confirmText="Deactivate"
+        cancelText="Cancel"
+        isDangerous
+        isLoading={deactivateLoading}
+        onConfirm={handleDeactivateClick}
+        onCancel={() => setDeactivateConfirm(null)}
+      />
     </section>
   );
 }
@@ -442,17 +674,78 @@ export default function CatalogManagementSection({
   const showActors = mode === "all" || mode === "actors";
   const showGenres = mode === "all" || mode === "genres";
 
+  const totalRecords = directorsRows.length + actorsRows.length + genresRows.length;
+  const totalActive = 
+    directorsRows.filter(r => r.status === "active").length +
+    actorsRows.filter(r => r.status === "active").length +
+    genresRows.filter(r => r.status === "active").length;
+
   return (
-    <div className="space-y-5">
-      <div className="rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 to-cyan-50 px-5 py-4">
-        <h2 className="text-lg font-semibold text-gray-900">Movie Catalog Controls</h2>
-        <p className="text-sm text-gray-700">
-          {mode === "all"
-            ? "Manage directors, actors, and genres from one place with create, edit, and soft-deactivate actions."
-            : "Use this section to add records, upload profile images, edit metadata, and deactivate entries."}
-        </p>
+    <div className="space-y-6">
+      {/* Header Card */}
+      <div className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-blue-50 via-white to-cyan-50 px-6 py-6 shadow-md shadow-blue-100/50">
+        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div className="flex items-start gap-4">
+            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100">
+              <Film className="h-7 w-7 text-blue-600" />
+            </div>
+            <div>
+              <h1 className="text-2xl font-bold text-slate-900">
+                Movie Catalog
+              </h1>
+              <p className="mt-1 text-sm text-slate-600">
+                {mode === "all"
+                  ? "Build your catalog by adding directors, actors, and genres"
+                  : "Manage your catalog entries with ease"}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:gap-6">
+            <div>
+              <p className="text-xs font-medium text-slate-600">TOTAL RECORDS</p>
+              <p className="mt-1 text-2xl font-bold text-slate-900">{totalRecords}</p>
+            </div>
+            <div className="h-10 border-l border-slate-200 sm:block hidden" />
+            <div>
+              <p className="text-xs font-medium text-slate-600">ACTIVE</p>
+              <p className="mt-1 flex items-center gap-1.5 text-xl font-bold text-emerald-600">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                {totalActive}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {mode === "all" && (
+          <div className="mt-4 grid gap-2 rounded-lg bg-white/70 p-3 sm:grid-cols-3">
+            <div className="flex items-center gap-2 text-xs text-slate-600">
+              <Crown className="h-4 w-4 text-amber-600" />
+              <span>{directorsRows.length} Directors</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-600">
+              <Film className="h-4 w-4 text-blue-600" />
+              <span>{actorsRows.length} Actors</span>
+            </div>
+            <div className="flex items-center gap-2 text-xs text-slate-600">
+              <Music className="h-4 w-4 text-purple-600" />
+              <span>{genresRows.length} Genres</span>
+            </div>
+          </div>
+        )}
       </div>
 
+      {/* Help Tips */}
+      <div className="rounded-lg border border-amber-200/80 bg-amber-50/60 px-4 py-3">
+        <div className="flex gap-3">
+          <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-600 mt-0.5" />
+          <p className="text-sm text-amber-900">
+            <strong>Tip:</strong> Click the "Hide details" button to collapse sections and focus on specific entries.
+          </p>
+        </div>
+      </div>
+
+      {/* Content Sections */}
       {showDirectors && (
         <EntitySection
           title="Directors"
