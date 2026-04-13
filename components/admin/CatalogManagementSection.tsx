@@ -19,6 +19,7 @@ import {
 } from "@/features/dashboard/service/movie-catalog";
 import { Loader2, Pencil, Plus, Power } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
+import toast from "react-hot-toast";
 
 type FormValues = {
   primary: string;
@@ -38,13 +39,6 @@ type EntityRow = {
 type MutationResult = {
   payload: unknown;
   status: number;
-};
-
-type Feedback = {
-  tone: "success" | "error";
-  title: string;
-  status: number | string;
-  payload: unknown;
 };
 
 type EntitySectionProps = {
@@ -67,30 +61,22 @@ type CatalogManagementSectionProps = {
   mode?: CatalogSectionMode;
 };
 
-const getErrorFeedback = (error: unknown): Feedback => {
+const getErrorMessage = (error: unknown): string => {
   if (typeof error === "object" && error !== null && "response" in error) {
     const err = error as {
       response?: {
-        status?: number;
-        data?: unknown;
+        data?: Record<string, unknown>;
       };
       message?: string;
     };
 
-    return {
-      tone: "error",
-      title: err.message || "Request failed",
-      status: err.response?.status || "failed",
-      payload: err.response?.data || null,
-    };
+    const firstServerMessage = err.response?.data
+      ? Object.values(err.response.data).flat().join(" ")
+      : "";
+    return firstServerMessage || err.message || "Request failed";
   }
 
-  return {
-    tone: "error",
-    title: "Request failed",
-    status: "failed",
-    payload: null,
-  };
+  return "Request failed";
 };
 
 function EntitySection({
@@ -113,7 +99,6 @@ function EntitySection({
     imageFile: null,
   });
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
-  const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   const activeCount = useMemo(
     () => rows.filter((item) => item.status === "active").length,
@@ -144,12 +129,7 @@ function EntitySection({
 
     const primaryValue = form.primary.trim();
     if (!primaryValue) {
-      setFeedback({
-        tone: "error",
-        title: `${primaryLabel} is required`,
-        status: "validation",
-        payload: null,
-      });
+      toast.error(`${primaryLabel} is required`);
       return;
     }
 
@@ -160,58 +140,50 @@ function EntitySection({
         imageFile: form.imageFile,
       };
 
-      const result = editingId
-        ? await onUpdate(editingId, payload)
-        : await onCreate(payload);
+      if (editingId) {
+        await onUpdate(editingId, payload);
+        toast.success(`${title.slice(0, -1)} updated`);
+      } else {
+        await onCreate(payload);
+        toast.success(`${title.slice(0, -1)} created`);
+      }
 
-      setFeedback({
-        tone: "success",
-        title: editingId
-          ? `${title} updated successfully`
-          : `${title} created successfully`,
-        status: result.status,
-        payload: result.payload,
-      });
       resetForm();
     } catch (error) {
-      setFeedback(getErrorFeedback(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
   const handleDeactivate = async (id: string) => {
     try {
-      const result = await onDeactivate(id);
-      setFeedback({
-        tone: "success",
-        title: `${title} deactivated successfully`,
-        status: result.status,
-        payload: result.payload,
-      });
+      await onDeactivate(id);
+      toast.success(`${title.slice(0, -1)} deactivated`);
     } catch (error) {
-      setFeedback(getErrorFeedback(error));
+      toast.error(getErrorMessage(error));
     }
   };
 
   return (
-    <section className="rounded-2xl border border-gray-200 bg-white/95 shadow-sm">
-      <div className="flex flex-wrap items-center justify-between gap-4 border-b border-gray-100 px-5 py-4">
+    <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60">
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
         <div>
-          <h2 className="text-xl font-semibold text-gray-900">{title}</h2>
-          <p className="text-sm text-gray-600">{description}</p>
+          <h2 className="text-xl font-semibold tracking-tight text-slate-900">{title}</h2>
+          <p className="text-sm text-slate-600">{description}</p>
         </div>
-        <div className="inline-flex items-center gap-2 rounded-full border border-blue-100 bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">
-          <span>{activeCount} active</span>
-          <span className="text-blue-300">/</span>
-          <span>{rows.length - activeCount} inactive</span>
+
+        <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-1 text-xs font-semibold text-slate-700 shadow-sm">
+          <span className="text-emerald-600">{activeCount} active</span>
+          <span className="text-slate-300">/</span>
+          <span className="text-amber-600">{rows.length - activeCount} inactive</span>
         </div>
       </div>
 
       <form
         onSubmit={handleSubmit}
-        className="grid gap-3 border-b border-gray-100 px-5 py-4 md:grid-cols-12"
+        className="grid gap-3 border-y border-slate-100 bg-slate-50/70 px-6 py-4 md:grid-cols-12"
       >
         <div className={supportsImage ? "md:col-span-3" : "md:col-span-4"}>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {primaryLabel}
           </label>
           <input
@@ -219,13 +191,13 @@ function EntitySection({
             onChange={(event) =>
               setForm((current) => ({ ...current, primary: event.target.value }))
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
             placeholder={`Enter ${primaryLabel.toLowerCase()}`}
           />
         </div>
 
         <div className={supportsImage ? "md:col-span-4" : "md:col-span-5"}>
-          <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+          <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
             {secondaryLabel}
           </label>
           <input
@@ -233,14 +205,14 @@ function EntitySection({
             onChange={(event) =>
               setForm((current) => ({ ...current, secondary: event.target.value }))
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none"
+            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 focus:border-blue-500 focus:outline-none"
             placeholder={`Optional ${secondaryLabel.toLowerCase()}`}
           />
         </div>
 
         {supportsImage && (
           <div className="md:col-span-3">
-            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+            <label className="mb-1 block text-xs font-semibold uppercase tracking-wide text-slate-500">
               Profile Image
             </label>
             <input
@@ -250,23 +222,23 @@ function EntitySection({
                 const selected = event.target.files?.[0] || null;
                 setForm((current) => ({ ...current, imageFile: selected }));
               }}
-              className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-blue-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-blue-700"
+              className="block w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-slate-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-slate-700"
             />
-            <p className="mt-1 text-[11px] text-gray-500">
+            <p className="mt-1 text-[11px] text-slate-500">
               JPG, PNG, WEBP up to 5MB.
             </p>
             {localImagePreview && (
-              <div className="mt-2 flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 p-2">
+              <div className="mt-2 flex items-center gap-2 rounded-xl border border-slate-200 bg-white p-2 shadow-sm">
                 <img
                   src={localImagePreview}
                   alt="Selected profile preview"
-                  className="h-12 w-12 rounded-md border border-blue-200 object-cover"
+                  className="h-12 w-12 rounded-lg border border-slate-200 object-cover"
                 />
                 <div className="min-w-0">
-                  <p className="truncate text-xs font-medium text-blue-900">
+                  <p className="truncate text-xs font-medium text-slate-800">
                     {form.imageFile?.name}
                   </p>
-                  <p className="text-[11px] text-blue-700">
+                  <p className="text-[11px] text-slate-500">
                     Preview before upload
                   </p>
                 </div>
@@ -279,7 +251,7 @@ function EntitySection({
           <button
             type="submit"
             disabled={isBusy}
-            className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-zuimi-blue px-3 py-2 text-sm font-medium text-white hover:opacity-95 disabled:cursor-not-allowed disabled:opacity-60"
+            className="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-3 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-60"
           >
             {isBusy ? (
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -293,7 +265,7 @@ function EntitySection({
             <button
               type="button"
               onClick={resetForm}
-              className="rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-700"
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700"
             >
               Cancel
             </button>
@@ -301,10 +273,10 @@ function EntitySection({
         </div>
       </form>
 
-      <div className="overflow-x-auto px-5 py-4">
+      <div className="overflow-x-auto px-6 py-4">
         <table className="w-full min-w-155 text-sm">
           <thead>
-            <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wide text-gray-500">
+            <tr className="border-b border-slate-200 text-left text-xs uppercase tracking-wide text-slate-500">
               <th className="px-2 py-3">Name</th>
               {supportsImage && <th className="px-2 py-3">Image</th>}
               <th className="px-2 py-3">Details</th>
@@ -318,7 +290,7 @@ function EntitySection({
               <tr>
                 <td
                   colSpan={supportsImage ? 6 : 5}
-                  className="px-2 py-6 text-center text-sm text-gray-500"
+                  className="px-2 py-8 text-center text-sm text-slate-500"
                 >
                   Loading {title.toLowerCase()}...
                 </td>
@@ -327,29 +299,29 @@ function EntitySection({
               <tr>
                 <td
                   colSpan={supportsImage ? 6 : 5}
-                  className="px-2 py-6 text-center text-sm text-gray-500"
+                  className="px-2 py-8 text-center text-sm text-slate-500"
                 >
                   No records yet
                 </td>
               </tr>
             ) : (
               rows.map((row) => (
-                <tr key={row.id} className="border-b border-gray-100 last:border-0">
-                  <td className="px-2 py-3 font-medium text-gray-900">{row.primary}</td>
+                <tr key={row.id} className="border-b border-slate-100 transition hover:bg-slate-50/70 last:border-0">
+                  <td className="px-2 py-3 font-semibold text-slate-800">{row.primary}</td>
                   {supportsImage && (
                     <td className="px-2 py-3">
                       {row.imageUrl ? (
                         <img
                           src={row.imageUrl}
                           alt={row.primary}
-                          className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
+                          className="h-10 w-10 rounded-xl border border-slate-200 object-cover"
                         />
                       ) : (
-                        <span className="text-xs text-gray-400">No image</span>
+                        <span className="text-xs text-slate-400">No image</span>
                       )}
                     </td>
                   )}
-                  <td className="max-w-55 truncate px-2 py-3 text-gray-600">
+                  <td className="max-w-55 truncate px-2 py-3 text-slate-600">
                     {row.secondary || "-"}
                   </td>
                   <td className="px-2 py-3">
@@ -363,7 +335,7 @@ function EntitySection({
                       {row.status}
                     </span>
                   </td>
-                  <td className="px-2 py-3 text-gray-600">{extractDate(row.updatedAt)}</td>
+                  <td className="px-2 py-3 text-slate-600">{extractDate(row.updatedAt)}</td>
                   <td className="px-2 py-3">
                     <div className="flex items-center justify-end gap-2">
                       <button
@@ -376,7 +348,7 @@ function EntitySection({
                             imageFile: null,
                           });
                         }}
-                        className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs text-gray-700"
+                        className="inline-flex items-center gap-1 rounded-lg border border-slate-300 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700"
                       >
                         <Pencil className="h-3.5 w-3.5" />
                         Edit
@@ -386,7 +358,7 @@ function EntitySection({
                         type="button"
                         onClick={() => handleDeactivate(row.id)}
                         disabled={row.status === "inactive" || isBusy}
-                        className="inline-flex items-center gap-1 rounded-md border border-red-200 px-2.5 py-1.5 text-xs text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
+                        className="inline-flex items-center gap-1 rounded-lg border border-red-200 bg-red-50 px-2.5 py-1.5 text-xs font-medium text-red-700 disabled:cursor-not-allowed disabled:opacity-50"
                       >
                         <Power className="h-3.5 w-3.5" />
                         Deactivate
@@ -399,24 +371,6 @@ function EntitySection({
           </tbody>
         </table>
       </div>
-
-      {feedback && (
-        <div
-          className={`mx-5 mb-5 rounded-lg border p-3 text-sm ${
-            feedback.tone === "success"
-              ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-              : "border-red-200 bg-red-50 text-red-700"
-          }`}
-        >
-          <p className="font-semibold">
-            {feedback.title} <span className="font-normal">(status: {feedback.status})</span>
-          </p>
-          <p className="mt-1 text-xs opacity-90">Latest payload result:</p>
-          <pre className="mt-2 max-h-40 overflow-auto rounded bg-black/5 p-2 text-xs text-gray-800">
-            {JSON.stringify(feedback.payload, null, 2)}
-          </pre>
-        </div>
-      )}
     </section>
   );
 }
