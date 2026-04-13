@@ -23,12 +23,14 @@ import { useMemo, useState } from "react";
 type FormValues = {
   primary: string;
   secondary: string;
+  imageFile: File | null;
 };
 
 type EntityRow = {
   id: string;
   primary: string;
   secondary: string | null;
+  imageUrl?: string | null;
   status: "active" | "inactive";
   updatedAt: string;
 };
@@ -50,12 +52,19 @@ type EntitySectionProps = {
   description: string;
   primaryLabel: string;
   secondaryLabel: string;
+  supportsImage?: boolean;
   rows: EntityRow[];
   isLoading: boolean;
   isBusy: boolean;
   onCreate: (values: FormValues) => Promise<MutationResult>;
   onUpdate: (id: string, values: FormValues) => Promise<MutationResult>;
   onDeactivate: (id: string) => Promise<MutationResult>;
+};
+
+export type CatalogSectionMode = "all" | "directors" | "actors" | "genres";
+
+type CatalogManagementSectionProps = {
+  mode?: CatalogSectionMode;
 };
 
 const getErrorFeedback = (error: unknown): Feedback => {
@@ -89,6 +98,7 @@ function EntitySection({
   description,
   primaryLabel,
   secondaryLabel,
+  supportsImage = false,
   rows,
   isLoading,
   isBusy,
@@ -97,7 +107,11 @@ function EntitySection({
   onDeactivate,
 }: EntitySectionProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
-  const [form, setForm] = useState<FormValues>({ primary: "", secondary: "" });
+  const [form, setForm] = useState<FormValues>({
+    primary: "",
+    secondary: "",
+    imageFile: null,
+  });
   const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   const activeCount = useMemo(
@@ -107,7 +121,7 @@ function EntitySection({
 
   const resetForm = () => {
     setEditingId(null);
-    setForm({ primary: "", secondary: "" });
+    setForm({ primary: "", secondary: "", imageFile: null });
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -128,6 +142,7 @@ function EntitySection({
       const payload = {
         primary: primaryValue,
         secondary: form.secondary.trim(),
+        imageFile: form.imageFile,
       };
 
       const result = editingId
@@ -176,8 +191,11 @@ function EntitySection({
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="grid gap-3 border-b border-gray-100 px-5 py-4 md:grid-cols-12">
-        <div className="md:col-span-4">
+      <form
+        onSubmit={handleSubmit}
+        className="grid gap-3 border-b border-gray-100 px-5 py-4 md:grid-cols-12"
+      >
+        <div className={supportsImage ? "md:col-span-3" : "md:col-span-4"}>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
             {primaryLabel}
           </label>
@@ -191,7 +209,7 @@ function EntitySection({
           />
         </div>
 
-        <div className="md:col-span-5">
+        <div className={supportsImage ? "md:col-span-4" : "md:col-span-5"}>
           <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
             {secondaryLabel}
           </label>
@@ -205,7 +223,27 @@ function EntitySection({
           />
         </div>
 
-        <div className="flex items-end gap-2 md:col-span-3">
+        {supportsImage && (
+          <div className="md:col-span-3">
+            <label className="mb-1 block text-xs font-medium uppercase tracking-wide text-gray-500">
+              Profile Image
+            </label>
+            <input
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              onChange={(event) => {
+                const selected = event.target.files?.[0] || null;
+                setForm((current) => ({ ...current, imageFile: selected }));
+              }}
+              className="block w-full rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm text-gray-700 file:mr-2 file:rounded-md file:border-0 file:bg-blue-50 file:px-2 file:py-1 file:text-xs file:font-medium file:text-blue-700"
+            />
+            <p className="mt-1 text-[11px] text-gray-500">
+              JPG, PNG, WEBP up to 5MB.
+            </p>
+          </div>
+        )}
+
+        <div className={supportsImage ? "flex items-end gap-2 md:col-span-2" : "flex items-end gap-2 md:col-span-3"}>
           <button
             type="submit"
             disabled={isBusy}
@@ -236,6 +274,7 @@ function EntitySection({
           <thead>
             <tr className="border-b border-gray-200 text-left text-xs uppercase tracking-wide text-gray-500">
               <th className="px-2 py-3">Name</th>
+              {supportsImage && <th className="px-2 py-3">Image</th>}
               <th className="px-2 py-3">Details</th>
               <th className="px-2 py-3">Status</th>
               <th className="px-2 py-3">Updated</th>
@@ -245,13 +284,19 @@ function EntitySection({
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={5} className="px-2 py-6 text-center text-sm text-gray-500">
+                <td
+                  colSpan={supportsImage ? 6 : 5}
+                  className="px-2 py-6 text-center text-sm text-gray-500"
+                >
                   Loading {title.toLowerCase()}...
                 </td>
               </tr>
             ) : rows.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-2 py-6 text-center text-sm text-gray-500">
+                <td
+                  colSpan={supportsImage ? 6 : 5}
+                  className="px-2 py-6 text-center text-sm text-gray-500"
+                >
                   No records yet
                 </td>
               </tr>
@@ -259,6 +304,19 @@ function EntitySection({
               rows.map((row) => (
                 <tr key={row.id} className="border-b border-gray-100 last:border-0">
                   <td className="px-2 py-3 font-medium text-gray-900">{row.primary}</td>
+                  {supportsImage && (
+                    <td className="px-2 py-3">
+                      {row.imageUrl ? (
+                        <img
+                          src={row.imageUrl}
+                          alt={row.primary}
+                          className="h-10 w-10 rounded-lg border border-gray-200 object-cover"
+                        />
+                      ) : (
+                        <span className="text-xs text-gray-400">No image</span>
+                      )}
+                    </td>
+                  )}
                   <td className="max-w-55 truncate px-2 py-3 text-gray-600">
                     {row.secondary || "-"}
                   </td>
@@ -283,6 +341,7 @@ function EntitySection({
                           setForm({
                             primary: row.primary,
                             secondary: row.secondary || "",
+                            imageFile: null,
                           });
                         }}
                         className="inline-flex items-center gap-1 rounded-md border border-gray-300 px-2.5 py-1.5 text-xs text-gray-700"
@@ -339,6 +398,7 @@ const mapProfileRows = (rows: CatalogProfile[] | undefined): EntityRow[] => {
     id: row.id,
     primary: row.full_name,
     secondary: row.bio,
+    imageUrl: row.profile_image,
     status: row.status,
     updatedAt: row.updated_at,
   }));
@@ -358,7 +418,9 @@ const mapGenreRows = (rows: CatalogGenre[] | undefined): EntityRow[] => {
   }));
 };
 
-export default function CatalogManagementSection() {
+export default function CatalogManagementSection({
+  mode = "all",
+}: CatalogManagementSectionProps) {
   const actorsQuery = useGetActors();
   const directorsQuery = useGetDirectors();
   const genresQuery = useGetGenres();
@@ -390,94 +452,112 @@ export default function CatalogManagementSection() {
     [genresQuery.data],
   );
 
+  const showDirectors = mode === "all" || mode === "directors";
+  const showActors = mode === "all" || mode === "actors";
+  const showGenres = mode === "all" || mode === "genres";
+
   return (
     <div className="space-y-5">
       <div className="rounded-2xl border border-blue-100 bg-linear-to-r from-blue-50 to-cyan-50 px-5 py-4">
         <h2 className="text-lg font-semibold text-gray-900">Movie Catalog Controls</h2>
         <p className="text-sm text-gray-700">
-          Manage directors, actors, and genres from one place with create, edit, and soft-deactivate actions.
+          {mode === "all"
+            ? "Manage directors, actors, and genres from one place with create, edit, and soft-deactivate actions."
+            : "Use this section to add records, upload profile images, edit metadata, and deactivate entries."}
         </p>
       </div>
 
-      <EntitySection
-        title="Directors"
-        description="Add and maintain director profiles used during movie upload."
-        primaryLabel="Full Name"
-        secondaryLabel="Bio"
-        rows={directorsRows}
-        isLoading={directorsQuery.isPending}
-        isBusy={
-          createDirector.isPending || updateDirector.isPending || deactivateDirector.isPending
-        }
-        onCreate={(values) =>
-          createDirector.mutateAsync({
-            full_name: values.primary,
-            bio: values.secondary || undefined,
-          })
-        }
-        onUpdate={(id, values) =>
-          updateDirector.mutateAsync({
-            id,
-            data: {
+      {showDirectors && (
+        <EntitySection
+          title="Directors"
+          description="Add and maintain director profiles used during movie upload."
+          primaryLabel="Full Name"
+          secondaryLabel="Bio"
+          supportsImage
+          rows={directorsRows}
+          isLoading={directorsQuery.isPending}
+          isBusy={
+            createDirector.isPending || updateDirector.isPending || deactivateDirector.isPending
+          }
+          onCreate={(values) =>
+            createDirector.mutateAsync({
               full_name: values.primary,
               bio: values.secondary || undefined,
-            },
-          })
-        }
-        onDeactivate={(id) => deactivateDirector.mutateAsync(id)}
-      />
+              profile_image_file: values.imageFile || undefined,
+            })
+          }
+          onUpdate={(id, values) =>
+            updateDirector.mutateAsync({
+              id,
+              data: {
+                full_name: values.primary,
+                bio: values.secondary || undefined,
+                profile_image_file: values.imageFile || undefined,
+              },
+            })
+          }
+          onDeactivate={(id) => deactivateDirector.mutateAsync(id)}
+        />
+      )}
 
-      <EntitySection
-        title="Actors"
-        description="Maintain cast profiles available for movie casting."
-        primaryLabel="Full Name"
-        secondaryLabel="Bio"
-        rows={actorsRows}
-        isLoading={actorsQuery.isPending}
-        isBusy={createActor.isPending || updateActor.isPending || deactivateActor.isPending}
-        onCreate={(values) =>
-          createActor.mutateAsync({
-            full_name: values.primary,
-            bio: values.secondary || undefined,
-          })
-        }
-        onUpdate={(id, values) =>
-          updateActor.mutateAsync({
-            id,
-            data: {
+      {showActors && (
+        <EntitySection
+          title="Actors"
+          description="Maintain cast profiles available for movie casting."
+          primaryLabel="Full Name"
+          secondaryLabel="Bio"
+          supportsImage
+          rows={actorsRows}
+          isLoading={actorsQuery.isPending}
+          isBusy={createActor.isPending || updateActor.isPending || deactivateActor.isPending}
+          onCreate={(values) =>
+            createActor.mutateAsync({
               full_name: values.primary,
               bio: values.secondary || undefined,
-            },
-          })
-        }
-        onDeactivate={(id) => deactivateActor.mutateAsync(id)}
-      />
+              profile_image_file: values.imageFile || undefined,
+            })
+          }
+          onUpdate={(id, values) =>
+            updateActor.mutateAsync({
+              id,
+              data: {
+                full_name: values.primary,
+                bio: values.secondary || undefined,
+                profile_image_file: values.imageFile || undefined,
+              },
+            })
+          }
+          onDeactivate={(id) => deactivateActor.mutateAsync(id)}
+        />
+      )}
 
-      <EntitySection
-        title="Genres"
-        description="Control genres available for movie classification."
-        primaryLabel="Name"
-        secondaryLabel="Description"
-        rows={genresRows}
-        isLoading={genresQuery.isPending}
-        isBusy={createGenre.isPending || updateGenre.isPending || deactivateGenre.isPending}
-        onCreate={(values) =>
-          createGenre.mutateAsync({
-            name: values.primary,
-            description: values.secondary || undefined,
-          })
-        }
-        onUpdate={(id, values) =>
-          updateGenre.mutateAsync({
-            id,
-            data: {
+      {showGenres && (
+        <EntitySection
+          title="Genres"
+          description="Control genres available for movie classification."
+          primaryLabel="Name"
+          secondaryLabel="Description"
+          rows={genresRows}
+          isLoading={genresQuery.isPending}
+          isBusy={createGenre.isPending || updateGenre.isPending || deactivateGenre.isPending}
+          onCreate={(values) =>
+            createGenre.mutateAsync({
               name: values.primary,
               description: values.secondary || undefined,
-            },
-          })
-        }
-        onDeactivate={(id) => deactivateGenre.mutateAsync(id)}
-      />
+            })
+          }
+          onUpdate={(id, values) =>
+            updateGenre.mutateAsync({
+              id,
+              data: {
+                name: values.primary,
+                description: values.secondary || undefined,
+              },
+            })
+          }
+          onDeactivate={(id) => deactivateGenre.mutateAsync(id)}
+        />
+      )}
     </div>
   );
 }
