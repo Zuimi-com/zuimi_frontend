@@ -18,7 +18,7 @@ import {
   useUpdateGenre,
 } from "@/features/dashboard/service/movie-catalog";
 import { Loader2, Pencil, Plus, Power } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type FormValues = {
   primary: string;
@@ -112,6 +112,7 @@ function EntitySection({
     secondary: "",
     imageFile: null,
   });
+  const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   const activeCount = useMemo(
@@ -123,6 +124,20 @@ function EntitySection({
     setEditingId(null);
     setForm({ primary: "", secondary: "", imageFile: null });
   };
+
+  useEffect(() => {
+    if (!form.imageFile) {
+      setLocalImagePreview(null);
+      return;
+    }
+
+    const objectUrl = URL.createObjectURL(form.imageFile);
+    setLocalImagePreview(objectUrl);
+
+    return () => {
+      URL.revokeObjectURL(objectUrl);
+    };
+  }, [form.imageFile]);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -240,6 +255,23 @@ function EntitySection({
             <p className="mt-1 text-[11px] text-gray-500">
               JPG, PNG, WEBP up to 5MB.
             </p>
+            {localImagePreview && (
+              <div className="mt-2 flex items-center gap-2 rounded-lg border border-blue-100 bg-blue-50 p-2">
+                <img
+                  src={localImagePreview}
+                  alt="Selected profile preview"
+                  className="h-12 w-12 rounded-md border border-blue-200 object-cover"
+                />
+                <div className="min-w-0">
+                  <p className="truncate text-xs font-medium text-blue-900">
+                    {form.imageFile?.name}
+                  </p>
+                  <p className="text-[11px] text-blue-700">
+                    Preview before upload
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
