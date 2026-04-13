@@ -10,6 +10,9 @@ import {
   useDeactivateActor,
   useDeactivateDirector,
   useDeactivateGenre,
+  useActivateActor,
+  useActivateDirector,
+  useActivateGenre,
   useGetActors,
   useGetDirectors,
   useGetGenres,
@@ -17,7 +20,7 @@ import {
   useUpdateDirector,
   useUpdateGenre,
 } from "@/features/dashboard/service/movie-catalog";
-import { AlertCircle, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X } from "lucide-react";
+import { AlertCircle, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -53,6 +56,7 @@ type EntitySectionProps = {
   onCreate: (values: FormValues) => Promise<MutationResult>;
   onUpdate: (id: string, values: FormValues) => Promise<MutationResult>;
   onDeactivate: (id: string) => Promise<MutationResult>;
+  onActivate: (id: string) => Promise<MutationResult>;
 };
 
 export type CatalogSectionMode = "all" | "directors" | "actors" | "genres";
@@ -166,6 +170,7 @@ function EntitySection({
   onCreate,
   onUpdate,
   onDeactivate,
+  onActivate,
 }: EntitySectionProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormValues>({
@@ -175,7 +180,9 @@ function EntitySection({
   });
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const [deactivateConfirm, setDeactivateConfirm] = useState<string | null>(null);
+  const [activateConfirm, setActivateConfirm] = useState<string | null>(null);
   const [deactivateLoading, setDeactivateLoading] = useState(false);
+  const [activateLoading, setActivateLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
 
   const activeCount = useMemo(
@@ -246,6 +253,21 @@ function EntitySection({
       toast.error(getErrorMessage(error));
     } finally {
       setDeactivateLoading(false);
+    }
+  };
+
+  const handleActivateClick = async () => {
+    if (!activateConfirm) return;
+
+    setActivateLoading(true);
+    try {
+      await onActivate(activateConfirm);
+      toast.success(`${title.slice(0, -1)} reactivated successfully`);
+      setActivateConfirm(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    } finally {
+      setActivateLoading(false);
     }
   };
 
@@ -565,21 +587,34 @@ function EntitySection({
                               <span className="hidden sm:inline">Edit</span>
                             </button>
 
-                            <button
-                              type="button"
-                              onClick={() =>
-                                setDeactivateConfirm(row.id)
-                              }
-                              disabled={
-                                row.status === "inactive" || isBusy
-                              }
-                              className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              <Trash2 className="h-3.5 w-3.5" />
-                              <span className="hidden sm:inline">
-                                Deactivate
-                              </span>
-                            </button>
+                            {row.status === "inactive" ? (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setActivateConfirm(row.id)
+                                }
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
+                              >
+                                <RotateCcw className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">
+                                  Reactivate
+                                </span>
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  setDeactivateConfirm(row.id)
+                                }
+                                disabled={isBusy}
+                                className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                <span className="hidden sm:inline">
+                                  Deactivate
+                                </span>
+                              </button>
+                            )}
                           </div>
                         </td>
                       </tr>
@@ -602,6 +637,18 @@ function EntitySection({
         isLoading={deactivateLoading}
         onConfirm={handleDeactivateClick}
         onCancel={() => setDeactivateConfirm(null)}
+      />
+
+      <ConfirmDialog
+        isOpen={!!activateConfirm}
+        title="Reactivate entry?"
+        description="This entry will be marked as active and will appear in listings."
+        confirmText="Reactivate"
+        cancelText="Cancel"
+        isDangerous={false}
+        isLoading={activateLoading}
+        onConfirm={handleActivateClick}
+        onCancel={() => setActivateConfirm(null)}
       />
     </section>
   );
@@ -646,14 +693,17 @@ export default function CatalogManagementSection({
   const createActor = useCreateActor();
   const updateActor = useUpdateActor();
   const deactivateActor = useDeactivateActor();
+  const activateActor = useActivateActor();
 
   const createDirector = useCreateDirector();
   const updateDirector = useUpdateDirector();
   const deactivateDirector = useDeactivateDirector();
+  const activateDirector = useActivateDirector();
 
   const createGenre = useCreateGenre();
   const updateGenre = useUpdateGenre();
   const deactivateGenre = useDeactivateGenre();
+  const activateGenre = useActivateGenre();
 
   const directorsRows = useMemo(
     () => mapProfileRows(directorsQuery.data).sort((a, b) => a.primary.localeCompare(b.primary)),
@@ -756,7 +806,7 @@ export default function CatalogManagementSection({
           rows={directorsRows}
           isLoading={directorsQuery.isPending}
           isBusy={
-            createDirector.isPending || updateDirector.isPending || deactivateDirector.isPending
+            createDirector.isPending || updateDirector.isPending || deactivateDirector.isPending || activateDirector.isPending
           }
           onCreate={(values) =>
             createDirector.mutateAsync({
@@ -776,6 +826,7 @@ export default function CatalogManagementSection({
             })
           }
           onDeactivate={(id) => deactivateDirector.mutateAsync(id)}
+          onActivate={(id) => activateDirector.mutateAsync(id)}
         />
       )}
 
@@ -788,7 +839,7 @@ export default function CatalogManagementSection({
           supportsImage
           rows={actorsRows}
           isLoading={actorsQuery.isPending}
-          isBusy={createActor.isPending || updateActor.isPending || deactivateActor.isPending}
+          isBusy={createActor.isPending || updateActor.isPending || deactivateActor.isPending || activateActor.isPending}
           onCreate={(values) =>
             createActor.mutateAsync({
               full_name: values.primary,
@@ -807,6 +858,7 @@ export default function CatalogManagementSection({
             })
           }
           onDeactivate={(id) => deactivateActor.mutateAsync(id)}
+          onActivate={(id) => activateActor.mutateAsync(id)}
         />
       )}
 
@@ -818,7 +870,7 @@ export default function CatalogManagementSection({
           secondaryLabel="Description"
           rows={genresRows}
           isLoading={genresQuery.isPending}
-          isBusy={createGenre.isPending || updateGenre.isPending || deactivateGenre.isPending}
+          isBusy={createGenre.isPending || updateGenre.isPending || deactivateGenre.isPending || activateGenre.isPending}
           onCreate={(values) =>
             createGenre.mutateAsync({
               name: values.primary,
@@ -835,6 +887,7 @@ export default function CatalogManagementSection({
             })
           }
           onDeactivate={(id) => deactivateGenre.mutateAsync(id)}
+          onActivate={(id) => activateGenre.mutateAsync(id)}
         />
       )}
     </div>

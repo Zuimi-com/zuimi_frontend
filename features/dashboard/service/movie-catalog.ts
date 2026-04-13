@@ -139,6 +139,27 @@ export const useDeactivateActor = () => {
   });
 };
 
+export const useActivateActor = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.patch<CatalogProfile>(
+        `${ACTORS_ENDPOINT}${id}/`,
+        { is_active: true }
+      );
+
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogProfile>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "actors"] });
+    },
+  });
+};
+
 export const useGetDirectors = () => {
   return useQuery({
     queryKey: ["movie-catalog", "directors"],
@@ -221,6 +242,27 @@ export const useDeactivateDirector = () => {
   });
 };
 
+export const useActivateDirector = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.patch<CatalogProfile>(
+        `${DIRECTORS_ENDPOINT}${id}/`,
+        { is_active: true }
+      );
+
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogProfile>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "directors"] });
+    },
+  });
+};
+
 export const useGetGenres = () => {
   return useQuery({
     queryKey: ["movie-catalog", "genres"],
@@ -286,6 +328,26 @@ export const useDeactivateGenre = () => {
         payload: res.data,
         status: res.status,
       } as ApiMutationResult<{ id: string; message: string; status: "inactive" }>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "genres"] });
+    },
+  });
+};
+
+export const useActivateGenre = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.patch<CatalogGenre>(`${GENRES_ENDPOINT}${id}/`, {
+        is_active: true,
+      });
+
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogGenre>;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movie-catalog", "genres"] });
