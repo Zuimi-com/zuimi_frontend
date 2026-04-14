@@ -732,68 +732,6 @@ export default function CatalogManagementSection({
 
   return (
     <div className="space-y-6">
-      {/* Header Card */}
-      <div className="rounded-2xl border border-slate-200/80 bg-linear-to-r from-blue-50 via-white to-cyan-50 px-6 py-6 shadow-md shadow-blue-100/50">
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div className="flex items-start gap-4">
-            <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-blue-100">
-              <Film className="h-7 w-7 text-blue-600" />
-            </div>
-            <div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                Movie Catalog
-              </h1>
-              <p className="mt-1 text-sm text-slate-600">
-                {mode === "all"
-                  ? "Build your catalog by adding directors, actors, and genres"
-                  : "Manage your catalog entries with ease"}
-              </p>
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:gap-6">
-            <div>
-              <p className="text-xs font-medium text-slate-600">TOTAL RECORDS</p>
-              <p className="mt-1 text-2xl font-bold text-slate-900">{totalRecords}</p>
-            </div>
-            <div className="h-10 border-l border-slate-200 sm:block hidden" />
-            <div>
-              <p className="text-xs font-medium text-slate-600">ACTIVE</p>
-              <p className="mt-1 flex items-center gap-1.5 text-xl font-bold text-emerald-600">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                {totalActive}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        {mode === "all" && (
-          <div className="mt-4 grid gap-2 rounded-lg bg-white/70 p-3 sm:grid-cols-3">
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Crown className="h-4 w-4 text-amber-600" />
-              <span>{directorsRows.length} Directors</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Film className="h-4 w-4 text-blue-600" />
-              <span>{actorsRows.length} Actors</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-slate-600">
-              <Music className="h-4 w-4 text-purple-600" />
-              <span>{genresRows.length} Genres</span>
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* Help Tips */}
-      <div className="rounded-lg border border-amber-200/80 bg-amber-50/60 px-4 py-3">
-        <div className="flex gap-3">
-          <AlertCircle className="h-4 w-4 flex-shrink-0 text-amber-600 mt-0.5" />
-          <p className="text-sm text-amber-900">
-            <strong>Tip:</strong> Click the "Hide details" button to collapse sections and focus on specific entries.
-          </p>
-        </div>
-      </div>
 
       {/* Content Sections */}
       {showDirectors && (
