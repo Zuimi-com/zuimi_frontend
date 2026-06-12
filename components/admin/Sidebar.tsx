@@ -54,6 +54,31 @@ export default function Sidebar() {
       ),
     },
     {
+      key: "/admin/movies",
+      label: "Movies",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 7h16M7 4l2 3m4-3l2 3m4-3l2 3M5 7v12a2 2 0 002 2h10a2 2 0 002-2V7"
+          />
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M10 11l5 3-5 3v-6z"
+          />
+        </svg>
+      ),
+    },
+    {
       key: "/admin/directors",
       label: "Directors",
       icon: (
