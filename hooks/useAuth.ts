@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
-import Cookies from "js-cookie";
 import { generateToken } from "@/lib/api"; 
+import { getAccessToken } from "@/lib/auth-cookies";
 
 
 export function useAuth() {
@@ -9,7 +9,7 @@ export function useAuth() {
 
   useEffect(() => {
     async function checkToken() {
-      const token = Cookies.get("access_token");
+      const token = getAccessToken();
 
       if (!token) {
         setIsAuthenticated(false);
@@ -33,4 +33,3 @@ export function useAuth() {
 
     return { isAuthenticated, loading };
 }  
-

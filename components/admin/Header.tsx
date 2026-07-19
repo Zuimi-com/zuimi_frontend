@@ -1,12 +1,6 @@
 "use client"
 import { useState, useEffect } from "react";
-import {generateToken, getCurrentUser} from "@/lib/api"
-
-interface User {
-  name: string;
-  email: string;
-  image: string;
-};
+import { generateToken, getCurrentUser, type User } from "@/lib/api";
 
 export default function Header() {
 
@@ -38,6 +32,13 @@ export default function Header() {
       .slice(0, 2);
   };
 
+  const displayName = user
+    ? user.full_name ||
+      [user.first_name, user.last_name].filter(Boolean).join(" ") ||
+      user.user_name ||
+      user.email
+    : "";
+
   return (
     <header className="zuimi-gradient px-6 py-4 flex items-center justify-between">
       <div className="bg-[linear-gradient(to_right,#1683EE,#F12F7A,#F68812)]  bg-clip-text text-transparent text-3xl font-extrabold">
@@ -56,16 +57,16 @@ export default function Header() {
              ) : user ? (
 
               <>
-              {user.image ? (
+              {user.profile_picture ? (
                 <img 
-                  src={user.image} 
-                  alt={user.name}
+                  src={user.profile_picture}
+                  alt={displayName}
         className="w-8 h-8 rounded-full bg-white/80" />
               ):(
 
                 <div className="w-8 h-8 rounded-full bg-white/80 flex items-center justify-center">
                   <span className="text-xs font-semibold text-blue-600">
-                    {getInitials(user.name)}
+                    {getInitials(displayName)}
                   </span>
                 </div>
               )}

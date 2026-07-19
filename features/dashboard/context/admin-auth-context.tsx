@@ -1,8 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { getAccessToken } from "@/lib/auth-cookies";
 
 type AdminAuthContextType = {
   loading: boolean;
@@ -19,12 +18,10 @@ export const AdminAuthProvider = ({
 }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
-    const token = Cookies.get("access");
-    console.log(token);
-    
+    const token = getAccessToken();
+
     if (token) {
       setIsAuthenticated(true);
     }

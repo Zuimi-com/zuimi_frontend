@@ -1,6 +1,6 @@
 import axios from "axios";
-import Cookies from "js-cookie";
 import { getApiBaseUrl } from "@/lib/get-api-base-url";
+import { clearAuthTokens, getAccessToken } from "@/lib/auth-cookies";
 
 export const axiosInstance = axios.create({
   baseURL: getApiBaseUrl(),
@@ -9,7 +9,7 @@ export const axiosInstance = axios.create({
 
 axiosInstance.interceptors.request.use(
   (config) => {
-    const accessToken = Cookies.get("access");
+    const accessToken = getAccessToken();
 
     if (accessToken) {
       config.headers.Authorization = `Bearer ${accessToken}`;
@@ -24,7 +24,7 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      Cookies.remove("access");
+      clearAuthTokens();
 
       if (typeof window !== "undefined") {
         window.location.href = "/admin-login";

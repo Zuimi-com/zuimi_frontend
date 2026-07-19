@@ -1,6 +1,6 @@
 "use client";
 import { useAdminLogin } from "@/features/auth/service/auth";
-import Cookies from "js-cookie";
+import { setAuthTokens } from "@/lib/auth-cookies";
 import { Loader2 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -37,16 +37,7 @@ export default function Page() {
       { email, password },
       {
         onSuccess: (data) => {
-          Cookies.set("access_token", data.access, {
-            expires: 7,
-            secure: true,
-            sameSite: "strict",
-          });
-          Cookies.set("refresh_token", data.refresh, {
-            expires: 7,
-            secure: true,
-            sameSite: "strict",
-          });
+          setAuthTokens(data.access, data.refresh);
           toast("Login Successful");
           handleAuthenticate(data.access);
           router.push("/admin");

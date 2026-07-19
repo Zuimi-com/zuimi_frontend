@@ -1,7 +1,11 @@
 import axios, { AxiosRequestConfig } from "axios";
 import toast from "react-hot-toast";
-import Cookies from "js-cookie";
 import { getApiBaseUrl } from "@/lib/get-api-base-url";
+import {
+  getAccessToken,
+  getRefreshToken,
+  setAccessToken,
+} from "@/lib/auth-cookies";
 
 export type Row = {
   subject: string;
@@ -11,9 +15,12 @@ export type Row = {
 };
 
 export interface User {
-  name: string;
+  first_name: string | null;
+  last_name: string | null;
+  full_name: string | null;
+  user_name: string | null;
   email: string;
-  image: string;
+  profile_picture: string | null;
 }
 
 export type Record = {
@@ -33,14 +40,16 @@ async function apiRequest<T>(
   token?: string
 ): Promise<T> {
   try {
-   const AuthorizationToken = Cookies.get("access");
+    const authorizationToken = token ?? getAccessToken();
 
     const config: AxiosRequestConfig = {
       method,
       url: `${Baseurl}${endpoint}`,
       headers: {
         "Content-Type": "application/json",
-        ...(AuthorizationToken ? { Authorization: `Bearer ${token}` } : {}),
+        ...(authorizationToken
+          ? { Authorization: `Bearer ${authorizationToken}` }
+          : {}),
       },
       data,
     };
@@ -48,8 +57,12 @@ async function apiRequest<T>(
     const response = await axios(config);
     return response.data;
   } catch (error: any) {
+    const responseData = error.response?.data;
     const message =
-      error.response?.data?.message || "Request failed";
+      responseData?.message ||
+      responseData?.error ||
+      responseData?.detail ||
+      "Request failed";
     toast.error(message);
     throw new Error(message);
   }
@@ -57,43 +70,39 @@ async function apiRequest<T>(
 
 
 export const adminLogin = (email: string, password: string) =>
-  apiRequest("/api/login/admin/", "POST", { email, password });
+  apiRequest("/login/admin/", "POST", { email, password });
 
 
 export const userLogin = (email: string, password: string) =>
-  apiRequest("/api/login/", "POST", { email, password });
+  apiRequest("/login/", "POST", { email, password });
 
 
 export const generateToken = async (): Promise<string> => {
-  const refreshToken = Cookies.get("refresh_token");
-  //if (!refreshToken) throw new Error("No refresh token found");
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) throw new Error("No refresh token found");
 
   const data = await apiRequest<{ access: string }>(
-    "/api/token/generate-access-token/",
+    "/token/generate-access-token/",
     "POST",
     { refresh: refreshToken }
   );
 
-  Cookies.set("access_token", data.access, {
-    expires: 7,
-    secure: true,
-    sameSite: "strict",
-  });
+  setAccessToken(data.access);
 
   return data.access;
 };
 
 
 export const getCurrentUser = (token: string) =>
-  apiRequest<User>("/api/user/profile/", "GET", undefined, token);
+  apiRequest<User>("/user/profile/", "GET", undefined, token);
 
 
 export const getNewsletterHistory = (token: string) =>
-  apiRequest<Row[]>("/api/newsletter/broadcasts/", "GET", undefined, token);
+  apiRequest<Row[]>("/newsletter/broadcasts/", "GET", undefined, token);
 
 
 export const getSubscribersOverview = (token: string) =>
-  apiRequest<Record[]>("/api/newsletter/waitlist/", "GET", undefined, token);
+  apiRequest<Record[]>("/newsletter/waitlist/", "GET", undefined, token);
 
 
 
