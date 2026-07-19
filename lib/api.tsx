@@ -33,7 +33,7 @@ async function apiRequest<T>(
   token?: string
 ): Promise<T> {
   try {
-   const AuthorizationToken = Cookies.get("access_token");
+   const AuthorizationToken = Cookies.get("access");
 
     const config: AxiosRequestConfig = {
       method,
@@ -66,7 +66,7 @@ export const userLogin = (email: string, password: string) =>
 
 export const generateToken = async (): Promise<string> => {
   const refreshToken = Cookies.get("refresh_token");
-  if (!refreshToken) throw new Error("No refresh token found");
+  //if (!refreshToken) throw new Error("No refresh token found");
 
   const data = await apiRequest<{ access: string }>(
     "/api/token/generate-access-token/",

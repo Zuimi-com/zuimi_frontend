@@ -251,7 +251,11 @@ export default function Sidebar() {
           <button
             type="button"
             className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg"
-            onClick={() => alert("Wire logout action here")}
+            onClick={() => {
+              localStorage.removeItem("access_token");
+              localStorage.removeItem("refresh_token");
+              window.location.href = "/admin-login";
+            }}
           >
             <svg
               className="w-5 h-5"

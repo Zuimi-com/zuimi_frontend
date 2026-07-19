@@ -37,7 +37,12 @@ export default function Page() {
       { email, password },
       {
         onSuccess: (data) => {
-          Cookies.set("access", data.access, {
+          Cookies.set("access_token", data.access, {
+            expires: 7,
+            secure: true,
+            sameSite: "strict",
+          });
+          Cookies.set("refresh_token", data.refresh, {
             expires: 7,
             secure: true,
             sameSite: "strict",
