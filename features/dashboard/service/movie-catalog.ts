@@ -27,6 +27,17 @@ export type CatalogGenre = {
   updated_at: string;
 };
 
+export type CatalogProducer = {
+  id: string;
+  full_name: string;
+  email: string | null;
+  phone_number: string | null;
+  is_active: boolean;
+  status: "active" | "inactive";
+  created_at: string;
+  updated_at: string;
+};
+
 type UpsertProfilePayload = {
   full_name: string;
   bio?: string;
@@ -38,9 +49,16 @@ type UpsertGenrePayload = {
   description?: string;
 };
 
+type UpsertProducerPayload = {
+  full_name: string;
+  email?: string;
+  phone_number?: string;
+};
+
 const ACTORS_ENDPOINT = "/movies/actors/";
 const DIRECTORS_ENDPOINT = "/movies/directors/";
 const GENRES_ENDPOINT = "/movies/genres/";
+const PRODUCERS_ENDPOINT = "/producers/";
 
 const buildProfileFormData = (data: UpsertProfilePayload) => {
   const formData = new FormData();
@@ -351,6 +369,100 @@ export const useActivateGenre = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movie-catalog", "genres"] });
+    },
+  });
+};
+
+export const useGetProducers = () => {
+  return useQuery({
+    queryKey: ["movie-catalog", "producers"],
+    queryFn: async () => {
+      const res = await axiosInstance.get<CatalogProducer[]>(
+        `${PRODUCERS_ENDPOINT}?include_inactive=true`,
+      );
+      return res.data;
+    },
+  });
+};
+
+export const useCreateProducer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: UpsertProducerPayload) => {
+      const res = await axiosInstance.post<CatalogProducer>(PRODUCERS_ENDPOINT, {
+        full_name: data.full_name.trim(),
+        email: data.email?.trim() || null,
+        phone_number: data.phone_number?.trim() || null,
+      });
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogProducer>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "producers"] });
+    },
+  });
+};
+
+export const useUpdateProducer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: UpsertProducerPayload }) => {
+      const res = await axiosInstance.patch<CatalogProducer>(
+        `${PRODUCERS_ENDPOINT}${id}/`,
+        {
+          full_name: data.full_name.trim(),
+          email: data.email?.trim() || null,
+          phone_number: data.phone_number?.trim() || null,
+        },
+      );
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogProducer>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "producers"] });
+    },
+  });
+};
+
+export const useDeactivateProducer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.delete(`${PRODUCERS_ENDPOINT}${id}/`);
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<{ id: string; message: string; status: "inactive" }>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "producers"] });
+    },
+  });
+};
+
+export const useActivateProducer = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.patch<CatalogProducer>(
+        `${PRODUCERS_ENDPOINT}${id}/`,
+        { is_active: true },
+      );
+      return {
+        payload: res.data,
+        status: res.status,
+      } as ApiMutationResult<CatalogProducer>;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["movie-catalog", "producers"] });
     },
   });
 };

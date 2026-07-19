@@ -84,9 +84,9 @@ export type CreateMoviePayload = {
   rating?: string;
   language?: string;
   release_date: string;
-  poster_image?: string;
-  movie_title_svg?: string;
-  trailer_url?: string;
+  poster_file?: File;
+  title_svg_file?: File;
+  trailer_file?: File;
   producer: string;
 };
 
@@ -109,7 +109,34 @@ export const useCreateMovie = () => {
 
   return useMutation({
     mutationFn: async (payload: CreateMoviePayload) => {
-      const res = await axiosInstance.post<Movie>(MOVIE_UPLOAD_ENDPOINT, payload);
+      const formData = new FormData();
+      formData.append("title", payload.title);
+      formData.append("release_date", payload.release_date);
+      formData.append("duration", String(payload.duration));
+      formData.append("price", payload.price);
+      formData.append("producer", payload.producer);
+
+      const optionalTextFields: Array<[string, string | undefined]> = [
+        ["description", payload.description],
+        ["genre", payload.genre],
+        ["director", payload.director],
+        ["cast", payload.cast],
+        ["director_id", payload.director_id],
+        ["rating", payload.rating],
+        ["language", payload.language],
+      ];
+      optionalTextFields.forEach(([key, value]) => {
+        if (value) formData.append(key, value);
+      });
+
+      payload.genre_ids?.forEach((id) => formData.append("genre_ids", id));
+      payload.actor_ids?.forEach((id) => formData.append("actor_ids", id));
+
+      if (payload.poster_file) formData.append("poster_file", payload.poster_file);
+      if (payload.title_svg_file) formData.append("title_svg_file", payload.title_svg_file);
+      if (payload.trailer_file) formData.append("trailer_file", payload.trailer_file);
+
+      const res = await axiosInstance.post<Movie>(MOVIE_UPLOAD_ENDPOINT, formData);
       return res.data;
     },
     onSuccess: () => {

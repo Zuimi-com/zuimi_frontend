@@ -1,6 +1,7 @@
 export type AdminSection =
   | "/admin"
   | "/admin/movies"
+  | "/admin/producers"
   | "/admin/directors"
   | "/admin/actors"
   | "/admin/genres"

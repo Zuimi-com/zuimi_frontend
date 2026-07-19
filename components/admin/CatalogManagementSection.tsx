@@ -3,24 +3,30 @@
 import { extractDate } from "@/lib/utils";
 import {
   CatalogGenre,
+  CatalogProducer,
   CatalogProfile,
   useCreateActor,
   useCreateDirector,
   useCreateGenre,
+  useCreateProducer,
   useDeactivateActor,
   useDeactivateDirector,
   useDeactivateGenre,
+  useDeactivateProducer,
   useActivateActor,
   useActivateDirector,
   useActivateGenre,
+  useActivateProducer,
   useGetActors,
   useGetDirectors,
   useGetGenres,
+  useGetProducers,
   useUpdateActor,
   useUpdateDirector,
   useUpdateGenre,
+  useUpdateProducer,
 } from "@/features/dashboard/service/movie-catalog";
-import { AlertCircle, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
+import { AlertCircle, BriefcaseBusiness, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 
@@ -59,7 +65,7 @@ type EntitySectionProps = {
   onActivate: (id: string) => Promise<MutationResult>;
 };
 
-export type CatalogSectionMode = "all" | "directors" | "actors" | "genres";
+export type CatalogSectionMode = "all" | "directors" | "actors" | "genres" | "producers";
 
 type CatalogManagementSectionProps = {
   mode?: CatalogSectionMode;
@@ -274,6 +280,7 @@ function EntitySection({
   const getEntityIcon = () => {
     if (title === "Directors") return <Crown className="h-5 w-5" />;
     if (title === "Actors") return <Film className="h-5 w-5" />;
+    if (title === "Producers") return <BriefcaseBusiness className="h-5 w-5" />;
     if (title === "Genres") return <Music className="h-5 w-5" />;
     return <Plus className="h-5 w-5" />;
   };
@@ -357,6 +364,8 @@ function EntitySection({
                       ? "Christopher Nolan"
                       : title === "Actors"
                         ? "Leonardo DiCaprio"
+                        : title === "Producers"
+                          ? "Ava DuVernay"
                         : "Action"
                   }`}
                 />
@@ -471,6 +480,8 @@ function EntitySection({
                     <Crown className="h-8 w-8 text-slate-400" />
                   ) : title === "Actors" ? (
                     <Film className="h-8 w-8 text-slate-400" />
+                  ) : title === "Producers" ? (
+                    <BriefcaseBusiness className="h-8 w-8 text-slate-400" />
                   ) : (
                     <Music className="h-8 w-8 text-slate-400" />
                   )}
@@ -683,12 +694,27 @@ const mapGenreRows = (rows: CatalogGenre[] | undefined): EntityRow[] => {
   }));
 };
 
+const mapProducerRows = (rows: CatalogProducer[] | undefined): EntityRow[] => {
+  if (!rows) {
+    return [];
+  }
+
+  return rows.map((row) => ({
+    id: row.id,
+    primary: row.full_name,
+    secondary: row.email,
+    status: row.status,
+    updatedAt: row.updated_at,
+  }));
+};
+
 export default function CatalogManagementSection({
   mode = "all",
 }: CatalogManagementSectionProps) {
   const actorsQuery = useGetActors();
   const directorsQuery = useGetDirectors();
   const genresQuery = useGetGenres();
+  const producersQuery = useGetProducers();
 
   const createActor = useCreateActor();
   const updateActor = useUpdateActor();
@@ -705,6 +731,11 @@ export default function CatalogManagementSection({
   const deactivateGenre = useDeactivateGenre();
   const activateGenre = useActivateGenre();
 
+  const createProducer = useCreateProducer();
+  const updateProducer = useUpdateProducer();
+  const deactivateProducer = useDeactivateProducer();
+  const activateProducer = useActivateProducer();
+
   const directorsRows = useMemo(
     () => mapProfileRows(directorsQuery.data).sort((a, b) => a.primary.localeCompare(b.primary)),
     [directorsQuery.data],
@@ -720,20 +751,61 @@ export default function CatalogManagementSection({
     [genresQuery.data],
   );
 
+  const producersRows = useMemo(
+    () => mapProducerRows(producersQuery.data).sort((a, b) => a.primary.localeCompare(b.primary)),
+    [producersQuery.data],
+  );
+
   const showDirectors = mode === "all" || mode === "directors";
   const showActors = mode === "all" || mode === "actors";
   const showGenres = mode === "all" || mode === "genres";
+  const showProducers = mode === "all" || mode === "producers";
 
-  const totalRecords = directorsRows.length + actorsRows.length + genresRows.length;
+  const totalRecords = directorsRows.length + actorsRows.length + genresRows.length + producersRows.length;
   const totalActive = 
     directorsRows.filter(r => r.status === "active").length +
     actorsRows.filter(r => r.status === "active").length +
-    genresRows.filter(r => r.status === "active").length;
+    genresRows.filter(r => r.status === "active").length +
+    producersRows.filter(r => r.status === "active").length;
 
   return (
     <div className="space-y-6">
 
       {/* Content Sections */}
+      {showProducers && (
+        <EntitySection
+          title="Producers"
+          description="Add and maintain producers available during movie upload."
+          primaryLabel="Full Name"
+          secondaryLabel="Email"
+          rows={producersRows}
+          isLoading={producersQuery.isPending}
+          isBusy={
+            createProducer.isPending ||
+            updateProducer.isPending ||
+            deactivateProducer.isPending ||
+            activateProducer.isPending
+          }
+          onCreate={(values) =>
+            createProducer.mutateAsync({
+              full_name: values.primary,
+              email: values.secondary || undefined,
+            })
+          }
+          onUpdate={(id, values) =>
+            updateProducer.mutateAsync({
+              id,
+              data: {
+                full_name: values.primary,
+                email: values.secondary || undefined,
+              },
+            })
+          }
+          onDeactivate={(id) => deactivateProducer.mutateAsync(id)}
+          onActivate={(id) => activateProducer.mutateAsync(id)}
+        />
+      )}
+
       {showDirectors && (
         <EntitySection
           title="Directors"

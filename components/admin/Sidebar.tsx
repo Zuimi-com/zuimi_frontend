@@ -80,6 +80,25 @@ export default function Sidebar() {
       ),
     },
     {
+      key: "/admin/producers",
+      label: "Producers",
+      icon: (
+        <svg
+          className="w-5 h-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M9 6V4h6v2m-9 3h12a2 2 0 012 2v7a2 2 0 01-2 2H6a2 2 0 01-2-2v-7a2 2 0 012-2zm-2 4h16"
+          />
+        </svg>
+      ),
+    },
+    {
       key: "/admin/directors",
       label: "Directors",
       icon: (

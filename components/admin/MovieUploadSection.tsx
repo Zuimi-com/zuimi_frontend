@@ -6,6 +6,7 @@ import {
   useGetActors,
   useGetDirectors,
   useGetGenres,
+  useGetProducers,
 } from "@/features/dashboard/service/movie-catalog";
 import {
   MovieAsset,
@@ -34,6 +35,7 @@ import {
 } from "lucide-react";
 import { useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import Link from "next/link";
 
 type MovieFormState = {
   title: string;
@@ -47,9 +49,9 @@ type MovieFormState = {
   actorIds: string[];
   rating: string;
   language: string;
-  posterImage: string;
-  movieTitleSvg: string;
-  trailerUrl: string;
+  posterFile: File | null;
+  titleSvgFile: File | null;
+  trailerFile: File | null;
 };
 
 const initialMovieForm: MovieFormState = {
@@ -64,9 +66,9 @@ const initialMovieForm: MovieFormState = {
   actorIds: [],
   rating: "",
   language: "English",
-  posterImage: "",
-  movieTitleSvg: "",
-  trailerUrl: "",
+  posterFile: null,
+  titleSvgFile: null,
+  trailerFile: null,
 };
 
 const getErrorMessage = (error: unknown): string => {
@@ -131,6 +133,37 @@ function MultiSelect({
           </option>
         ))}
       </select>
+    </label>
+  );
+}
+
+function FileUploadField({
+  label,
+  help,
+  accept,
+  file,
+  onChange,
+}: {
+  label: string;
+  help: string;
+  accept: string;
+  file: File | null;
+  onChange: (file: File | null) => void;
+}) {
+  return (
+    <label className="block rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4 transition hover:border-blue-400 hover:bg-blue-50/40">
+      <span className="mb-2 block text-sm font-semibold text-slate-700">
+        {label}
+      </span>
+      <input
+        type="file"
+        accept={accept}
+        onChange={(event) => onChange(event.target.files?.[0] || null)}
+        className="block w-full text-sm text-slate-600 file:mr-3 file:rounded-lg file:border-0 file:bg-blue-100 file:px-3 file:py-2 file:text-sm file:font-semibold file:text-blue-700"
+      />
+      <p className="mt-2 truncate text-xs text-slate-500">
+        {file ? `${file.name} • ${(file.size / 1024 / 1024).toFixed(2)} MB` : help}
+      </p>
     </label>
   );
 }
@@ -227,6 +260,7 @@ export default function MovieUploadSection() {
   const directorsQuery = useGetDirectors();
   const actorsQuery = useGetActors();
   const genresQuery = useGetGenres();
+  const producersQuery = useGetProducers();
 
   const createMovie = useCreateMovie();
   const uploadAsset = useUploadMovieAsset();
@@ -258,6 +292,11 @@ export default function MovieUploadSection() {
     [genresQuery.data],
   );
 
+  const producers = useMemo(
+    () => (producersQuery.data || []).filter((item) => item.is_active),
+    [producersQuery.data],
+  );
+
   const sortedAssets = useMemo(
     () =>
       [...(assetsQuery.data || [])].sort(
@@ -280,7 +319,12 @@ export default function MovieUploadSection() {
     }
 
     if (!movieForm.producer.trim()) {
-      toast.error("Producer UUID is required");
+      toast.error("Select a producer");
+      return;
+    }
+
+    if (!movieForm.releaseDate) {
+      toast.error("Release date is required");
       return;
     }
 
@@ -290,27 +334,36 @@ export default function MovieUploadSection() {
       return;
     }
 
+    const price = Number(movieForm.price);
+    if (!Number.isFinite(price) || price < 0) {
+      toast.error("Price must be a valid non-negative amount");
+      return;
+    }
+
+    const formElement = event.currentTarget;
+
     try {
       const movie = await createMovie.mutateAsync({
         title: movieForm.title.trim(),
         description: movieForm.description.trim() || undefined,
         release_date: movieForm.releaseDate,
         duration,
-        price: movieForm.price.trim() || "0.00",
+        price: price.toFixed(2),
         producer: movieForm.producer.trim(),
         director_id: movieForm.directorId || undefined,
         genre_ids: movieForm.genreIds,
         actor_ids: movieForm.actorIds,
         rating: movieForm.rating.trim() || undefined,
         language: movieForm.language.trim() || undefined,
-        poster_image: movieForm.posterImage.trim() || undefined,
-        movie_title_svg: movieForm.movieTitleSvg.trim() || undefined,
-        trailer_url: movieForm.trailerUrl.trim() || undefined,
+        poster_file: movieForm.posterFile || undefined,
+        title_svg_file: movieForm.titleSvgFile || undefined,
+        trailer_file: movieForm.trailerFile || undefined,
       });
 
       toast.success("Movie created");
       setSelectedMovieId(movie.id);
       setMovieForm(initialMovieForm);
+      formElement.reset();
     } catch (error) {
       toast.error(getErrorMessage(error));
     }
@@ -370,6 +423,7 @@ export default function MovieUploadSection() {
           onClick={() => {
             moviesQuery.refetch();
             assetsQuery.refetch();
+            producersQuery.refetch();
           }}
           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
         >
@@ -410,14 +464,27 @@ export default function MovieUploadSection() {
               </label>
 
               <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Producer UUID
+                <span className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold text-slate-700">
+                  <span>Producer</span>
+                  <Link
+                    href="/admin/producers"
+                    className="text-xs font-medium text-blue-600 hover:text-blue-700"
+                  >
+                    Manage producers
+                  </Link>
                 </span>
-                <input
+                <select
                   value={movieForm.producer}
                   onChange={(event) => updateMovieForm({ producer: event.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                />
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
+                >
+                  <option value="">Select a producer</option>
+                  {producers.map((producer) => (
+                    <option key={producer.id} value={producer.id}>
+                      {producer.full_name}
+                    </option>
+                  ))}
+                </select>
               </label>
 
               <label className="block">
@@ -448,13 +515,28 @@ export default function MovieUploadSection() {
 
                 <label className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
-                    Price
+                    Price (ZTK)
                   </span>
-                  <input
-                    value={movieForm.price}
-                    onChange={(event) => updateMovieForm({ price: event.target.value })}
-                    className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  />
+                  <div className="flex overflow-hidden rounded-lg border border-slate-300 bg-white focus-within:border-blue-500 focus-within:ring-2 focus-within:ring-blue-500/20">
+                    <span className="border-r border-slate-200 bg-slate-50 px-3 py-2.5 text-sm font-semibold text-slate-600">
+                      ZTK
+                    </span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      inputMode="decimal"
+                      value={movieForm.price}
+                      onChange={(event) => updateMovieForm({ price: event.target.value })}
+                      onBlur={() => {
+                        const value = Number(movieForm.price);
+                        if (Number.isFinite(value) && value >= 0) {
+                          updateMovieForm({ price: value.toFixed(2) });
+                        }
+                      }}
+                      className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
+                    />
+                  </div>
                 </label>
               </div>
             </div>
@@ -531,38 +613,29 @@ export default function MovieUploadSection() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-3">
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Poster URL
-                </span>
-                <input
-                  value={movieForm.posterImage}
-                  onChange={(event) => updateMovieForm({ posterImage: event.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </label>
+              <FileUploadField
+                label="Poster image"
+                help="JPG, PNG, or WEBP • Max 10MB"
+                accept="image/jpeg,image/png,image/webp"
+                file={movieForm.posterFile}
+                onChange={(posterFile) => updateMovieForm({ posterFile })}
+              />
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Title SVG URL
-                </span>
-                <input
-                  value={movieForm.movieTitleSvg}
-                  onChange={(event) => updateMovieForm({ movieTitleSvg: event.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </label>
+              <FileUploadField
+                label="Movie title artwork"
+                help="SVG only • Max 2MB"
+                accept="image/svg+xml,.svg"
+                file={movieForm.titleSvgFile}
+                onChange={(titleSvgFile) => updateMovieForm({ titleSvgFile })}
+              />
 
-              <label className="block">
-                <span className="mb-2 block text-sm font-semibold text-slate-700">
-                  Trailer URL
-                </span>
-                <input
-                  value={movieForm.trailerUrl}
-                  onChange={(event) => updateMovieForm({ trailerUrl: event.target.value })}
-                  className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                />
-              </label>
+              <FileUploadField
+                label="Trailer"
+                help="MP4, MOV, M4V, or WEBM • Max 250MB"
+                accept="video/mp4,video/quicktime,video/webm,.m4v"
+                file={movieForm.trailerFile}
+                onChange={(trailerFile) => updateMovieForm({ trailerFile })}
+              />
             </div>
 
             <div className="flex justify-end">
