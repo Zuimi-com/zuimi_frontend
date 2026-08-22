@@ -6,6 +6,7 @@ import { getApiBaseUrl } from "@/lib/get-api-base-url";
 
 const ACCESS_COOKIE = "zuimi_admin_access";
 const REFRESH_COOKIE = "zuimi_admin_refresh";
+const LEGACY_CLIENT_COOKIES = ["access_token", "refresh_token"] as const;
 
 const cookieOptions = (maxAge: number) => ({
   httpOnly: true,
@@ -20,6 +21,7 @@ const backendUrl = (path: string) =>
 
 export async function setAdminSession(access: string, refresh: string) {
   const store = await cookies();
+  LEGACY_CLIENT_COOKIES.forEach((name) => store.delete(name));
   store.set(ACCESS_COOKIE, access, cookieOptions(15 * 60));
   store.set(REFRESH_COOKIE, refresh, cookieOptions(30 * 24 * 60 * 60));
 }
@@ -28,6 +30,7 @@ export async function clearAdminSession() {
   const store = await cookies();
   store.delete(ACCESS_COOKIE);
   store.delete(REFRESH_COOKIE);
+  LEGACY_CLIENT_COOKIES.forEach((name) => store.delete(name));
 }
 
 async function refreshAdminSession(): Promise<string | null> {
