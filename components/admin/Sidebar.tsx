@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminSection } from "@/types/admin";
-import { clearAuthTokens } from "@/lib/auth-cookies";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,6 +17,7 @@ function cx(...classes: Array<string | false | undefined>) {
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { logout } = useAdminAuth();
   const items: NavItem[] = [
     {
       key: "/admin",
@@ -271,8 +272,8 @@ export default function Sidebar() {
           <button
             type="button"
             className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg"
-            onClick={() => {
-              clearAuthTokens();
+            onClick={async () => {
+              await logout();
               window.location.href = "/admin-login";
             }}
           >
