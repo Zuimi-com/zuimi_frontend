@@ -1,4 +1,4 @@
-import { axiosInstance } from "@/lib/axios";
+import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 
 type LoginPayLoad = {
@@ -7,18 +7,19 @@ type LoginPayLoad = {
 };
 
 export interface LoginResponse {
-  access: string;
-  refresh: string;
-  user_id: string;
-  email: string;
-  wallet_id: string | null;
+  user: {
+    id: string;
+    email: string;
+    is_staff: true;
+    is_superuser: boolean;
+  };
 }
 
 export const useAdminLogin = () => {
   return useMutation({
     mutationFn: async (data: LoginPayLoad) => {
-      const res = await axiosInstance.post<LoginResponse>(
-        `/login/admin/`,
+      const res = await axios.post<LoginResponse>(
+        "/api/admin/session/login",
         data,
       );
       return res.data;

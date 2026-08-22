@@ -1,6 +1,5 @@
 "use client";
 import { useAdminLogin } from "@/features/auth/service/auth";
-import { setAuthTokens } from "@/lib/auth-cookies";
 import { Loader2 } from "lucide-react";
 import { Inter } from "next/font/google";
 import Image from "next/image";
@@ -37,9 +36,8 @@ export default function Page() {
       { email, password },
       {
         onSuccess: (data) => {
-          setAuthTokens(data.access, data.refresh);
           toast("Login Successful");
-          handleAuthenticate(data.access);
+          handleAuthenticate(data.user);
           router.push("/admin");
         },
       },
