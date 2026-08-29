@@ -1,4 +1,5 @@
 import { axiosInstance } from "@/lib/axios";
+import axios from "axios";
 import { useMutation, useQuery } from "@tanstack/react-query";
 
 type SubscribePayload = {
@@ -20,7 +21,7 @@ export const useGetSubscribers = () => {
 export const useSubcribeToWaitlist = () => {
   return useMutation({
     mutationFn: async (data: SubscribePayload) => {
-      const res = await axiosInstance.post(`/newsletter/subscribe/`, data);
+      const res = await axios.post("/api/waitlist", data);
       return res.data;
     },
   });
