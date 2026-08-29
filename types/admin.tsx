@@ -8,4 +8,5 @@ export type AdminSection =
   | "/admin/newsletter"
   | "/admin/compose-letter"
   | "/admin/subscribers"
-  | "/admin/images";
+  | "/admin/images"
+  | "/admin/videos";
