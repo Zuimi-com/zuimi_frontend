@@ -4,7 +4,6 @@ import Image from "next/image";
 import React, { useState } from "react";
 import { useSubcribeToWaitlist } from "../dashboard/service/subscribers";
 import toast from "react-hot-toast";
-import { error } from "console";
 
 const JoinWaitlist: React.FC = () => {
   const subscribe = useSubcribeToWaitlist();
