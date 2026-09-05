@@ -160,7 +160,15 @@ export const useUploadMovieAsset = () => {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async ({ movieId, sourceFile }: { movieId: string; sourceFile: File }) => {
+    mutationFn: async ({
+      movieId,
+      sourceFile,
+      onProgress,
+    }: {
+      movieId: string;
+      sourceFile: File;
+      onProgress?: (percent: number) => void;
+    }) => {
       const formData = new FormData();
       formData.append("movie", movieId);
       formData.append("source_file", sourceFile);
@@ -171,6 +179,12 @@ export const useUploadMovieAsset = () => {
       }>(ASSETS_ENDPOINT, formData, {
         headers: {
           "Content-Type": "multipart/form-data",
+        },
+        onUploadProgress: (event) => {
+          if (!onProgress) return;
+          const total = event.total || sourceFile.size;
+          if (!total) return;
+          onProgress(Math.min(100, Math.round((event.loaded / total) * 100)));
         },
       });
 
