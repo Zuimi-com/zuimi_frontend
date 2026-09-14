@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { clearOperatorSession, operatorFetch } from "@/lib/server/operator-session";
+import { clearOperatorSession, getOperatorRefreshToken, operatorFetch } from "@/lib/server/operator-session";
 
 export async function GET() {
   const response = await operatorFetch("/operators/session/");
@@ -7,6 +7,17 @@ export async function GET() {
 }
 
 export async function DELETE() {
-  await clearOperatorSession();
+  const refresh = await getOperatorRefreshToken();
+  try {
+    if (refresh) {
+      await operatorFetch("/login/logout/", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+      });
+    }
+  } finally {
+    await clearOperatorSession();
+  }
   return new NextResponse(null, { status: 204 });
 }

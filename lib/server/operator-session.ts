@@ -22,6 +22,10 @@ export async function clearOperatorSession() {
   store.delete(refreshName);
 }
 
+export async function getOperatorRefreshToken() {
+  return (await cookies()).get(refreshName)?.value ?? null;
+}
+
 async function refreshAccess(): Promise<string | null> {
   const refresh = (await cookies()).get(refreshName)?.value;
   if (!refresh) return null;
