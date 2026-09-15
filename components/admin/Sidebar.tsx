@@ -235,8 +235,8 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="w-72 p-6">
-      <div className="h-[75vh] bg-white rounded-xl shadow-md border border-gray-100 p-4 flex flex-col">
+    <aside className="h-full w-72 shrink-0 overflow-y-auto overscroll-contain border-r border-gray-200 p-6">
+      <div className="flex min-h-full flex-col rounded-xl border border-gray-100 bg-white p-4 shadow-md">
         <nav className="space-y-1">
           {items.map((item) => {
             const active = item.key === pathname;
