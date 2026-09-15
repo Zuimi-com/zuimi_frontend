@@ -19,6 +19,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const { logout } = useAdminAuth();
   const items: NavItem[] = [
+    { key: "/admin/operators", label: "Operators", icon: <span aria-hidden="true" className="text-xl">◈</span> },
     {
       key: "/admin",
       label: "Dashboard",
