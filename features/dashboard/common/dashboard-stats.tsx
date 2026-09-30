@@ -1,85 +1,95 @@
 "use client";
 
-import React from "react";
-import { Users, UserCheck, Send, TrendingUp } from "lucide-react";
+import { FileText, Send, Users, Clock3 } from "lucide-react";
 import Link from "next/link";
+import { useGetNewsletterSummary } from "@/features/dashboard/service/newsletter";
+import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
-const stats = [
-  {
-    title: "Total Subscribers",
-    value: "2,530",
-    subtitle: "All sign ups",
-    icon: Users,
-    iconBg: "bg-blue-100",
-    iconColor: "text-blue-600",
-  },
-  {
-    title: "Active Subscribers",
-    value: "2,500",
-    subtitle: "Currently subscribed",
-    icon: UserCheck,
-    iconBg: "bg-green-100",
-    iconColor: "text-green-600",
-  },
-  {
-    title: "Newsletter sent",
-    value: "30",
-    subtitle: "This year",
-    icon: Send,
-    iconBg: "bg-purple-100",
-    iconColor: "text-purple-600",
-  },
-  {
-    title: "Open rate",
-    value: "80%",
-    subtitle: "based on last sent",
-    icon: TrendingUp,
-    iconBg: "bg-orange-100",
-    iconColor: "text-orange-600",
-  },
-];
+export default function DashboardStats() {
+  const summary = useGetNewsletterSummary();
+  const { isPlayback } = useAdminTutorial();
 
-const DashboardStats = () => {
+  const stats = [
+    {
+      title: "Subscribers",
+      value: summary.data?.subscriber_count ?? "—",
+      subtitle: "Current newsletter recipients",
+      icon: Users,
+      iconBg: "bg-blue-100",
+      iconColor: "text-blue-600",
+    },
+    {
+      title: "Draft newsletters",
+      value: summary.data?.draft_count ?? "—",
+      subtitle: "Saved but not sent",
+      icon: FileText,
+      iconBg: "bg-slate-100",
+      iconColor: "text-slate-600",
+    },
+    {
+      title: "Queued newsletters",
+      value: summary.data?.queued_count ?? "—",
+      subtitle: "Waiting for delivery",
+      icon: Clock3,
+      iconBg: "bg-amber-100",
+      iconColor: "text-amber-700",
+    },
+    {
+      title: "Newsletters sent",
+      value: summary.data?.sent_count ?? "—",
+      subtitle: summary.data?.latest_sent_at
+        ? `Latest: ${new Date(summary.data.latest_sent_at).toLocaleDateString()}`
+        : "No completed sends yet",
+      icon: Send,
+      iconBg: "bg-emerald-100",
+      iconColor: "text-emerald-700",
+    },
+  ];
+
   return (
     <section className="space-y-6">
-      {/* Header */}
       <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-bold">Dashboard</h1>
+        <div>
+          <h1 className="text-2xl font-bold">Dashboard</h1>
+          {summary.isError ? (
+            <p className="mt-1 text-sm text-red-700">
+              Newsletter activity could not be loaded.
+            </p>
+          ) : null}
+        </div>
 
         <Link
-          href={"/admin/compose-letter"}
-          className="bg-zuimi-blue text-white px-4 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition"
+          href="/admin/compose-letter"
+          data-tutorial="admin-compose-shortcut"
+          onClick={(event) => isPlayback && event.preventDefault()}
+          className="rounded-lg bg-zuimi-blue px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
         >
           Compose Letter
         </Link>
       </div>
 
-      {/* Stats */}
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      <div
+        data-tutorial="admin-dashboard-stats"
+        className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4"
+      >
         {stats.map((item) => {
           const Icon = item.icon;
           return (
             <div
               key={item.title}
-              className="rounded-xl border bg-background p-5 flex flex-col gap-4"
+              className="flex flex-col gap-4 rounded-xl border bg-background p-5"
             >
               <div className="flex items-center justify-between">
                 <span className="text-sm text-zuimi-accent">{item.title}</span>
-
-                <div
-                  className={`h-9 w-9 rounded-full flex items-center justify-center ${item.iconBg}`}
-                >
+                <div className={`flex h-9 w-9 items-center justify-center rounded-full ${item.iconBg}`}>
                   <Icon className={`h-5 w-5 ${item.iconColor}`} />
                 </div>
               </div>
-
               <div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  {item.value}
+                  {summary.isPending ? "…" : item.value}
                 </h2>
-                <p className="text-xs text-zuimi-subtitle mt-1">
-                  {item.subtitle}
-                </p>
+                <p className="mt-1 text-xs text-zuimi-subtitle">{item.subtitle}</p>
               </div>
             </div>
           );
@@ -87,6 +97,5 @@ const DashboardStats = () => {
       </div>
     </section>
   );
-};
+}
 
-export default DashboardStats;

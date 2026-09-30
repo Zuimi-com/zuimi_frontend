@@ -1,25 +1,24 @@
 "use client";
-import NewsletterHistory, {
-  NewsletterRow,
-} from "@/components/admin/NewsletterHistory";
+
+import NewsletterHistory from "@/components/admin/NewsletterHistory";
 import SectionSkeleton from "@/components/admin/SectionSkeleton";
-import { useGetNewsLetter } from "@/features/dashboard/service/newsletter";
+import { useGetBroadcasts } from "@/features/dashboard/service/newsletter";
 
-const NewsLetterHome = () => {
-  const { data, isPending } = useGetNewsLetter();
+export default function NewsLetterHome() {
+  const broadcasts = useGetBroadcasts();
 
-  if (isPending || !data) {
+  if (broadcasts.isPending) {
     return <SectionSkeleton />;
   }
 
-  const newsLetters: NewsletterRow[] = data.map((data) => ({
-    subject: data.email,
-    dateSent: data.subscribed_at,
-    status: data.status,
-    openRate: data.openRate!,
-  }));
+  if (broadcasts.isError) {
+    return (
+      <p role="alert" className="rounded-xl bg-red-50 p-4 text-sm text-red-800">
+        Newsletter history could not be loaded. Refresh the page to try again.
+      </p>
+    );
+  }
 
-  return <NewsletterHistory rows={newsLetters} />;
-};
+  return <NewsletterHistory rows={broadcasts.data || []} />;
+}
 
-export default NewsLetterHome;
