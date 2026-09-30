@@ -16,6 +16,9 @@ export interface LoginResponse {
 }
 
 export const useAdminLogin = () => {
+    capabilities: {
+      manage_operators: boolean;
+    };
   return useMutation({
     mutationFn: async (data: LoginPayLoad) => {
       const res = await axios.post<LoginResponse>(

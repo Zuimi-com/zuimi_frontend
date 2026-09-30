@@ -9,4 +9,5 @@ export type AdminSection =
   | "/admin/compose-letter"
   | "/admin/subscribers"
   | "/admin/images"
-  | "/admin/operators";
+  | "/admin/operators"
+  | "/admin/tutorials";
