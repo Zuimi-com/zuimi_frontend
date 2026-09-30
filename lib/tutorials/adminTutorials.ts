@@ -242,13 +242,16 @@ export const ADMIN_TUTORIALS: AdminTutorialDefinition[] = [
     category: "Newsletter and subscribers",
     title: "Review subscribers",
     description: "Review the people who will receive a newsletter and when they joined.",
-    duration: "About 1 minute",
+    duration: "About 2 minutes",
     route: "/admin/subscribers",
     steps: [
       step('[data-tutorial="subscriber-overview"]', "Review subscribers", "This list shows the current waitlist subscribers available for newsletter delivery."),
       step('[data-tutorial="subscriber-total"]', "Check the total", "This count matches the valid recipient list."),
       step('[data-tutorial="subscriber-email"]', "Review the email", "Confirm the address represented by each row."),
       step('[data-tutorial="subscriber-date"]', "Review the subscription date", "This shows when the address joined the list."),
+      step('[data-tutorial="subscriber-loading"]', "Recognise loading", "Zuimi shows this state while the protected subscriber list is loading.", "subscriber-loading"),
+      step('[data-tutorial="subscriber-empty"]', "Recognise an empty list", "This state means there are currently no subscribers to display.", "subscriber-empty"),
+      step('[data-tutorial="subscriber-error"]', "Recognise a loading error", "Refresh the page after checking the connection; the interface never invents subscriber data.", "subscriber-error"),
     ],
   },
   {
@@ -260,7 +263,8 @@ export const ADMIN_TUTORIALS: AdminTutorialDefinition[] = [
     duration: "About 3 minutes",
     route: "/admin/images",
     steps: [
-      step('[data-tutorial="image-picker"]', "Choose newsletter images", "Select JPG, PNG, GIF, or WEBP images up to 5MB each."),
+      step('[data-tutorial="image-picker"]', "Choose newsletter images", "Select one or more images from your device."),
+      step('[data-tutorial="image-picker"]', "Validate selected files", "Zuimi accepts JPG, PNG, GIF, or WEBP images up to 5MB each and reports files it skips."),
       step('[data-tutorial="image-preview"]', "Review previews", "Check every selected image before uploading.", "images-selected"),
       step('[data-tutorial="image-remove"]', "Remove a selection", "Remove any incorrect image without affecting uploaded media.", "images-selected"),
       step('[data-tutorial="image-upload"]', "Upload selected images", "Files are uploaded individually so a failed file does not hide successful ones. Tutorial playback never uploads.", "images-selected"),

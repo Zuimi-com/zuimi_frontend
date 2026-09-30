@@ -12,13 +12,13 @@ export interface LoginResponse {
     email: string;
     is_staff: true;
     is_superuser: boolean;
+    capabilities: {
+      manage_operators: boolean;
+    };
   };
 }
 
 export const useAdminLogin = () => {
-    capabilities: {
-      manage_operators: boolean;
-    };
   return useMutation({
     mutationFn: async (data: LoginPayLoad) => {
       const res = await axios.post<LoginResponse>(

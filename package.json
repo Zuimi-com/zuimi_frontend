@@ -5,7 +5,8 @@
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
-    "start": "next start"
+    "start": "next start",
+    "test:tutorials": "tsc -p tsconfig.tutorial-tests.json && node --test /tmp/zuimi-admin-tutorial-tests/tests/adminTutorials.test.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.20",

@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  AdminCapability,
   AdminTutorialDefinition,
   AdminTutorialProgress,
   adminTutorialById,
@@ -21,6 +22,8 @@ import {
   useState,
 } from "react";
 import AdminGuidedTutorialOverlay from "./AdminGuidedTutorialOverlay";
+import { axiosInstance } from "@/lib/axios";
+import { tutorialAllowsRequest } from "@/lib/tutorials/adminTutorialGuards";
 
 type AdminTutorialContextValue = {
   activeTutorial: AdminTutorialDefinition | null;
@@ -41,7 +44,8 @@ export function AdminTutorialProvider({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const capabilities = admin?.capabilities ?? {};
+  const capabilities: Partial<Record<AdminCapability, boolean>> =
+    admin?.capabilities ?? {};
   const requestedTutorial = adminTutorialById(searchParams.get("tutorial"));
   const activeTutorial =
     requestedTutorial &&
@@ -60,6 +64,17 @@ export function AdminTutorialProvider({ children }: { children: ReactNode }) {
     const lastStep = Math.max(0, activeTutorial.steps.length - 1);
     setStepIndex(Math.min(lastStep, Math.max(0, requestedStep || 0)));
   }, [activeTutorial, requestedStep]);
+
+  useEffect(() => {
+    if (!activeTutorial) return;
+    const interceptor = axiosInstance.interceptors.request.use((config) => {
+      if (!tutorialAllowsRequest(true, config.method)) {
+        throw new Error("Tutorial playback blocked a mutation request.");
+      }
+      return config;
+    });
+    return () => axiosInstance.interceptors.request.eject(interceptor);
+  }, [activeTutorial]);
 
   const progressKey = useCallback(
     (tutorial: AdminTutorialDefinition) =>

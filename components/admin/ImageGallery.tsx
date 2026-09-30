@@ -21,7 +21,7 @@ export default function ImageGallery() {
   const { isPlayback } = useAdminTutorial();
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [currentPage, setCurrentPage] = useState(1);
-  const query = useGetLetterImages();
+  const query = useGetLetterImages(!isPlayback);
 
   const images = useMemo(
     () =>

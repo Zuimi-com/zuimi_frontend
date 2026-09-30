@@ -10,9 +10,10 @@ export type NewsletterMedia = {
   uploaded_at: string;
 };
 
-export const useGetLetterImages = () =>
+export const useGetLetterImages = (enabled = true) =>
   useQuery({
     queryKey: ["images"],
+    enabled,
     queryFn: async () => {
       const response = await axiosInstance.get<NewsletterMedia[]>("/newsletter/media/");
       return response.data;

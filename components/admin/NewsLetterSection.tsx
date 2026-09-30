@@ -1,30 +1,18 @@
 "use client";
-import React from "react";
-import NewsletterHistory, {
-  NewsletterRow,
-} from "@/components/admin/NewsletterHistory";
-import { useGetBroadcasts, useGetNewsLetter } from "@/features/dashboard/service/newsletter";
+
+import NewsletterHistory from "@/components/admin/NewsletterHistory";
+import { useGetBroadcasts } from "@/features/dashboard/service/newsletter";
 import SectionSkeleton from "./SectionSkeleton";
 
 const NewsLetterSection = () => {
-  const { data, isPending: isLoadingNewsLetter } = useGetNewsLetter();
-  const { data: broadcasts } = useGetBroadcasts()
-  
-  console.log(broadcasts);
-  
+  const broadcasts = useGetBroadcasts();
 
-  if (isLoadingNewsLetter || !data) {
-    return <SectionSkeleton />;
+  if (broadcasts.isPending) return <SectionSkeleton />;
+  if (broadcasts.isError) {
+    return <p className="text-sm text-red-700">Newsletter history could not be loaded.</p>;
   }
 
-  const newsLetters: NewsletterRow[] = data.map((data) => ({
-    subject: data.email,
-    dateSent: data.subscribed_at,
-    status: data.status,
-    openRate: data.openRate!,
-  }));
-
-  return <NewsletterHistory rows={newsLetters} />;
+  return <NewsletterHistory rows={broadcasts.data || []} />;
 };
 
 export default NewsLetterSection;

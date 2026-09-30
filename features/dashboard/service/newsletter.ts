@@ -36,9 +36,10 @@ export type NewsletterSummary = {
   sender_email: string;
 };
 
-export const useGetSubscribers = () =>
+export const useGetSubscribers = (enabled = true) =>
   useQuery({
     queryKey: ["newsletter", "subscribers"],
+    enabled,
     queryFn: async () => {
       const response = await axiosInstance.get<NewsletterSubscriber[]>(
         "/newsletter/waitlist/",
@@ -49,16 +50,17 @@ export const useGetSubscribers = () =>
 
 export const useGetNewsLetter = useGetSubscribers;
 
-export const useGetBroadcasts = () =>
+export const useGetBroadcasts = (enabled = true) =>
   useQuery({
     queryKey: ["newsletter", "broadcasts"],
+    enabled,
     queryFn: async () => {
       const response = await axiosInstance.get<NewsletterBroadcast[]>(
         "/newsletter/broadcasts/",
       );
       return response.data;
     },
-    refetchInterval: 15000,
+    refetchInterval: enabled ? 15000 : false,
   });
 
 export const useGetNewsletterSummary = (enabled = true) =>

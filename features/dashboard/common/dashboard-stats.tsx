@@ -6,13 +6,13 @@ import { useGetNewsletterSummary } from "@/features/dashboard/service/newsletter
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
 export default function DashboardStats() {
-  const summary = useGetNewsletterSummary();
   const { isPlayback } = useAdminTutorial();
+  const summary = useGetNewsletterSummary(!isPlayback);
 
   const stats = [
     {
       title: "Subscribers",
-      value: summary.data?.subscriber_count ?? "—",
+      value: isPlayback ? 2500 : summary.data?.subscriber_count ?? "—",
       subtitle: "Current newsletter recipients",
       icon: Users,
       iconBg: "bg-blue-100",
@@ -20,7 +20,7 @@ export default function DashboardStats() {
     },
     {
       title: "Draft newsletters",
-      value: summary.data?.draft_count ?? "—",
+      value: isPlayback ? 3 : summary.data?.draft_count ?? "—",
       subtitle: "Saved but not sent",
       icon: FileText,
       iconBg: "bg-slate-100",
@@ -28,7 +28,7 @@ export default function DashboardStats() {
     },
     {
       title: "Queued newsletters",
-      value: summary.data?.queued_count ?? "—",
+      value: isPlayback ? 1 : summary.data?.queued_count ?? "—",
       subtitle: "Waiting for delivery",
       icon: Clock3,
       iconBg: "bg-amber-100",
@@ -36,7 +36,7 @@ export default function DashboardStats() {
     },
     {
       title: "Newsletters sent",
-      value: summary.data?.sent_count ?? "—",
+      value: isPlayback ? 24 : summary.data?.sent_count ?? "—",
       subtitle: summary.data?.latest_sent_at
         ? `Latest: ${new Date(summary.data.latest_sent_at).toLocaleDateString()}`
         : "No completed sends yet",
@@ -87,7 +87,7 @@ export default function DashboardStats() {
               </div>
               <div>
                 <h2 className="text-2xl font-bold text-foreground">
-                  {summary.isPending ? "…" : item.value}
+                  {summary.isPending && !isPlayback ? "…" : item.value}
                 </h2>
                 <p className="mt-1 text-xs text-zuimi-subtitle">{item.subtitle}</p>
               </div>
