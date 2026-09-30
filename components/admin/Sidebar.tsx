@@ -2,6 +2,7 @@
 
 import { AdminSection } from "@/types/admin";
 import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -17,9 +18,12 @@ function cx(...classes: Array<string | false | undefined>) {
 
 export default function Sidebar() {
   const pathname = usePathname();
-  const { logout } = useAdminAuth();
+  const { logout, admin } = useAdminAuth();
+  const { isPlayback } = useAdminTutorial();
   const items: NavItem[] = [
-    { key: "/admin/operators", label: "Operators", icon: <span aria-hidden="true" className="text-xl">◈</span> },
+    ...(admin?.capabilities.manage_operators
+      ? [{ key: "/admin/operators" as AdminSection, label: "Operators", icon: <span aria-hidden="true" className="text-xl">◈</span> }]
+      : []),
     {
       key: "/admin",
       label: "Dashboard",
