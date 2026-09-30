@@ -753,7 +753,9 @@ export default function MovieUploadSection() {
 
         <button
           type="button"
+          disabled={isPlayback}
           onClick={() => {
+            if (isPlayback) return;
             moviesQuery.refetch();
             assetsQuery.refetch();
             producersQuery.refetch();
@@ -769,6 +771,7 @@ export default function MovieUploadSection() {
       </div>
 
       <ol
+        data-tutorial="movie-workflow-overview"
         aria-label="Movie upload workflow"
         className="grid gap-3 sm:grid-cols-3"
       >
@@ -799,7 +802,7 @@ export default function MovieUploadSection() {
           </li>
         ))}
       </ol>
-      {catalogQueries.some((query) => query.isError) && (
+      {!isPlayback && catalogQueries.some((query) => query.isError) && (
         <div
           role="alert"
           className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900"
@@ -826,8 +829,9 @@ export default function MovieUploadSection() {
       )}
       <div className="flex flex-wrap gap-2" aria-label="Choose upload task">
         <button
+          data-tutorial="movie-tab-details"
           type="button"
-          disabled={createMovie.isPending || uploadAsset.isPending}
+          disabled={isPlayback || createMovie.isPending || uploadAsset.isPending}
           aria-pressed={step === "details"}
           onClick={() => setStep("details")}
           className={`rounded-xl px-5 py-3 text-sm font-semibold ${step === "details" ? "bg-blue-700 text-white" : "border border-slate-300 bg-white text-slate-700"}`}
@@ -835,8 +839,9 @@ export default function MovieUploadSection() {
           1. Add a new movie
         </button>
         <button
+          data-tutorial="movie-tab-video"
           type="button"
-          disabled={createMovie.isPending || uploadAsset.isPending}
+          disabled={isPlayback || createMovie.isPending || uploadAsset.isPending}
           aria-pressed={step === "video"}
           onClick={() => setStep("video")}
           className={`rounded-xl px-5 py-3 text-sm font-semibold ${step === "video" ? "bg-blue-700 text-white" : "border border-slate-300 bg-white text-slate-700"}`}
@@ -868,12 +873,12 @@ export default function MovieUploadSection() {
 
           <form onSubmit={handleCreateMovie} className="px-4 py-6 sm:px-6">
             <fieldset
-              disabled={createMovie.isPending}
+              disabled={isPlayback || createMovie.isPending}
               className="min-w-0 space-y-6"
             >
               <h3 className="font-semibold text-slate-900">The essentials</h3>
               <div className="grid gap-4 md:grid-cols-2">
-                <label className="block">
+                <label data-tutorial="movie-title" className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Movie title *
                   </span>
@@ -887,11 +892,15 @@ export default function MovieUploadSection() {
                   />
                 </label>
 
-                <label className="block">
+                <label data-tutorial="movie-producer" className="block">
                   <span className="mb-2 flex items-center justify-between gap-3 text-sm font-semibold text-slate-700">
                     <span>Producer *</span>
                     <Link
+                      data-tutorial="movie-manage-producers"
                       href="/admin/producers"
+                      onClick={(event) => {
+                        if (isPlayback) event.preventDefault();
+                      }}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label="Manage producers (opens in a new tab)"
@@ -903,7 +912,7 @@ export default function MovieUploadSection() {
                   <select
                     required
                     disabled={
-                      producersQuery.isPending || producersQuery.isError
+                      !isPlayback && (producersQuery.isPending || producersQuery.isError)
                     }
                     value={movieForm.producer}
                     onChange={(event) =>
@@ -912,7 +921,7 @@ export default function MovieUploadSection() {
                     className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                   >
                     <option value="">
-                      {producersQuery.isPending
+                      {!isPlayback && producersQuery.isPending
                         ? "Loading producers…"
                         : "Select a producer"}
                     </option>
@@ -924,7 +933,7 @@ export default function MovieUploadSection() {
                   </select>
                 </label>
 
-                <label className="block">
+                <label data-tutorial="movie-release-date" className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Release date *
                   </span>
@@ -940,7 +949,7 @@ export default function MovieUploadSection() {
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
-                  <label className="block">
+                  <label data-tutorial="movie-duration" className="block">
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Duration (minutes) *
                     </span>
@@ -956,7 +965,7 @@ export default function MovieUploadSection() {
                     />
                   </label>
 
-                  <label className="block">
+                  <label data-tutorial="movie-price" className="block">
                     <span className="mb-2 block text-sm font-semibold text-slate-700">
                       Price (ZTK) *
                     </span>
@@ -998,7 +1007,7 @@ export default function MovieUploadSection() {
                   · Optional
                 </span>
               </h3>
-              <label className="block">
+              <label data-tutorial="movie-description" className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Synopsis
                 </span>
@@ -1014,7 +1023,7 @@ export default function MovieUploadSection() {
               </label>
 
               <div className="grid gap-4 md:grid-cols-3">
-                <label className="block">
+                <label data-tutorial="movie-director" className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Director
                   </span>
@@ -1034,7 +1043,7 @@ export default function MovieUploadSection() {
                   </select>
                 </label>
 
-                <label className="block">
+                <label data-tutorial="movie-language" className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Language
                   </span>
@@ -1047,7 +1056,7 @@ export default function MovieUploadSection() {
                   />
                 </label>
 
-                <label className="block">
+                <label data-tutorial="movie-rating" className="block">
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Rating
                   </span>
@@ -1063,6 +1072,8 @@ export default function MovieUploadSection() {
 
               <div className="grid gap-4 md:grid-cols-2">
                 <MultiSelect
+                  tutorial="movie-genres"
+                  disabled={isPlayback}
                   label="Genres"
                   value={movieForm.genreIds}
                   options={genres}
@@ -1070,6 +1081,8 @@ export default function MovieUploadSection() {
                   onChange={(genreIds) => updateMovieForm({ genreIds })}
                 />
                 <MultiSelect
+                  tutorial="movie-cast"
+                  disabled={isPlayback}
                   label="Cast"
                   value={movieForm.actorIds}
                   options={actors}
@@ -1090,6 +1103,8 @@ export default function MovieUploadSection() {
               </p>
               <div className="grid gap-4 md:grid-cols-2">
                 <FileUploadField
+                  tutorial="movie-poster"
+                  disabled={isPlayback}
                   key={`poster-${movieFileKey}`}
                   maxMB={10}
                   extensions={["jpg", "jpeg", "png", "webp"]}
@@ -1101,6 +1116,8 @@ export default function MovieUploadSection() {
                 />
 
                 <FileUploadField
+                  tutorial="movie-title-artwork"
+                  disabled={isPlayback}
                   key={`artwork-${movieFileKey}`}
                   maxMB={2}
                   extensions={["svg"]}
@@ -1112,6 +1129,8 @@ export default function MovieUploadSection() {
                 />
 
                 <FileUploadField
+                  tutorial="movie-trailer"
+                  disabled={isPlayback}
                   key={`trailer-${movieFileKey}`}
                   maxMB={250}
                   extensions={["mp4", "mov", "m4v", "webm"]}
@@ -1125,8 +1144,10 @@ export default function MovieUploadSection() {
 
               <div className="flex justify-end">
                 <button
+                  data-tutorial="movie-save-details"
                   type="submit"
                   disabled={
+                    isPlayback ||
                     createMovie.isPending ||
                     producersQuery.isPending ||
                     producersQuery.isError
@@ -1174,16 +1195,16 @@ export default function MovieUploadSection() {
 
           <form onSubmit={handleUploadAsset} className="px-4 py-6 sm:px-6">
             <fieldset
-              disabled={uploadAsset.isPending}
+              disabled={isPlayback || uploadAsset.isPending}
               className="min-w-0 space-y-5"
             >
-              <label className="block">
+              <label data-tutorial="movie-video-select" className="block">
                 <span className="mb-2 block text-sm font-semibold text-slate-700">
                   Movie
                 </span>
                 <select
                   required
-                  disabled={moviesQuery.isPending || moviesQuery.isError}
+                  disabled={!isPlayback && (moviesQuery.isPending || moviesQuery.isError)}
                   value={selectedMovieId}
                   onChange={(event) => setSelectedMovieId(event.target.value)}
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
@@ -1197,8 +1218,8 @@ export default function MovieUploadSection() {
                 </select>
               </label>
 
-              {!moviesQuery.isPending &&
-                !moviesQuery.isError &&
+              {(!moviesQuery.isPending || isPlayback) &&
+                (!moviesQuery.isError || isPlayback) &&
                 sortedMovies.length === 0 && (
                   <p className="text-sm text-slate-600">
                     No movies yet. Choose “Add a new movie” above to save the
@@ -1206,13 +1227,15 @@ export default function MovieUploadSection() {
                   </p>
                 )}
               {existingUpload && (
-                <p className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
+                <p data-tutorial="movie-replacement-warning" className="rounded-xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-900">
                   This movie already has a video. Uploading a new file will
                   replace it and remove streaming access until the replacement
                   is prepared and published.
                 </p>
               )}
               <FileUploadField
+                tutorial="movie-source-file"
+                disabled={isPlayback}
                 key={`source-${sourceFileKey}`}
                 label="Full movie video"
                 help="MP4, MOV, M4V or MKV. Choose the full movie, not its trailer."
@@ -1221,8 +1244,8 @@ export default function MovieUploadSection() {
                 file={sourceFile}
                 onChange={setSourceFile}
               />
-              {uploadAsset.isPending && (
-                <div className="rounded-xl bg-blue-50 p-4">
+              {(uploadAsset.isPending || (isPlayback && demoState === "video-uploading")) && (
+                <div data-tutorial="movie-upload-progress" className="rounded-xl bg-blue-50 p-4">
                   <p
                     role="status"
                     className="mb-2 text-sm font-semibold text-blue-800"
@@ -1243,8 +1266,10 @@ export default function MovieUploadSection() {
                 </div>
               )}
               <button
+                data-tutorial="movie-upload-submit"
                 type="submit"
                 disabled={
+                  isPlayback ||
                   uploadAsset.isPending ||
                   !selectedMovieId ||
                   !sourceFile ||
@@ -1268,7 +1293,7 @@ export default function MovieUploadSection() {
         </section>
       </div>
 
-      <section className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
+      <section data-tutorial="movie-processing-queue" className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 px-4 py-5 sm:px-6">
           <h2
             ref={queueHeading}
@@ -1286,6 +1311,7 @@ export default function MovieUploadSection() {
           </p>
           <div className="mt-4 flex flex-col gap-3 sm:flex-row">
             <input
+              data-tutorial="movie-asset-search"
               type="search"
               aria-label="Search uploaded movies"
               placeholder="Search movie title or filename…"
@@ -1294,6 +1320,7 @@ export default function MovieUploadSection() {
               className="min-w-0 flex-1 rounded-lg border border-slate-300 px-3 py-2.5 text-sm focus:outline-blue-500"
             />
             <select
+              data-tutorial="movie-asset-filter"
               aria-label="Filter uploads by status"
               value={assetFilter}
               onChange={(event) => setAssetFilter(event.target.value)}
@@ -1309,14 +1336,14 @@ export default function MovieUploadSection() {
           </div>
         </div>
         <div className="space-y-3 p-4 sm:p-6">
-          {assetsQuery.isError ? (
+          {assetsQuery.isError && !isPlayback ? (
             <p
               role="alert"
               className="rounded-xl bg-red-50 p-4 text-sm text-red-800"
             >
               Uploads could not load. Use Refresh to try again.
             </p>
-          ) : assetsQuery.isPending ? (
+          ) : assetsQuery.isPending && !isPlayback ? (
             <p
               role="status"
               className="flex items-center gap-2 py-8 text-sm text-slate-600"
@@ -1340,6 +1367,7 @@ export default function MovieUploadSection() {
           ) : (
             visibleAssets.map((asset) => {
               const isBusy =
+                isPlayback ||
                 activeActionId !== null ||
                 processJob.isPending ||
                 retryAsset.isPending ||
@@ -1370,7 +1398,7 @@ export default function MovieUploadSection() {
                         MB
                       </p>
                     </div>
-                    <div className="shrink-0">
+                    <div data-tutorial="movie-asset-status" className="shrink-0">
                       <AssetStatusBadge asset={asset} />
                     </div>
                   </div>
@@ -1420,11 +1448,15 @@ export default function MovieUploadSection() {
                       }
                     />
                   </div>
-                  <details className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500">
+                  <details
+                    data-tutorial="movie-asset-support"
+                    open={isPlayback && demoState === "asset-failed-open"}
+                    className="mt-4 border-t border-slate-100 pt-3 text-xs text-slate-500"
+                  >
                     <summary className="w-fit cursor-pointer rounded font-medium focus-visible:outline-blue-500">
                       Technical details for support
                     </summary>
-                    <dl className="mt-3 space-y-2 break-all">
+                    <dl data-tutorial="movie-asset-job" className="mt-3 space-y-2 break-all">
                       <div>
                         <dt className="font-semibold">Upload ID</dt>
                         <dd>{asset.id}</dd>

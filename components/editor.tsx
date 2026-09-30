@@ -13,9 +13,11 @@ import EditorToolbar from "./admin/editor-toolbar";
 export default function DocumentEditor({
   subject,
   onSubjectChange,
+  onContentChange,
 }: {
   subject: string;
   onSubjectChange: (subject: string) => void;
+  onContentChange: (content: string) => void;
 }) {
   const { setEditor } = useEditorStore();
   const { isPlayback } = useAdminTutorial();
@@ -44,6 +46,10 @@ export default function DocumentEditor({
     content: "",
     onCreate({ editor: createdEditor }) {
       setEditor(createdEditor);
+      onContentChange(createdEditor.getHTML());
+    },
+    onUpdate({ editor: updatedEditor }) {
+      onContentChange(updatedEditor.getHTML());
     },
     immediatelyRender: false,
     editable: !isPlayback,

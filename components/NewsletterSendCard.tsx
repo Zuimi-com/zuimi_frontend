@@ -5,22 +5,22 @@ import {
   useSaveNewsletterDraft,
   useSendNewsletter,
 } from "@/features/dashboard/service/newsletter";
-import { useEditorStore } from "@/store/use-editor";
 import { Loader2, SaveAll, Send, Users, X } from "lucide-react";
 import { useState } from "react";
 
 export function NewsletterSendCard({
   subject,
+  body,
   subscribersCount,
   senderName,
   senderEmail,
 }: {
   subject: string;
+  body: string;
   subscribersCount: number;
   senderName: string;
   senderEmail: string;
 }) {
-  const { editor } = useEditorStore();
   const { isPlayback, demoState } = useAdminTutorial();
   const saveDraft = useSaveNewsletterDraft();
   const sendNewsletter = useSendNewsletter();
@@ -28,8 +28,7 @@ export function NewsletterSendCard({
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [message, setMessage] = useState("");
 
-  const body = editor?.getHTML() || "";
-  const hasContent = Boolean(editor?.getText().trim());
+  const hasContent = body.replace(/<[^>]*>/g, "").trim().length > 0;
   const valid = Boolean(subject.trim() && hasContent);
   const busy = saveDraft.isPending || sendNewsletter.isPending;
   const showConfirmation = confirmOpen || demoState === "send-confirm";

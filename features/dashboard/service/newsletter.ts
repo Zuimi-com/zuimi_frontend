@@ -61,16 +61,17 @@ export const useGetBroadcasts = () =>
     refetchInterval: 15000,
   });
 
-export const useGetNewsletterSummary = () =>
+export const useGetNewsletterSummary = (enabled = true) =>
   useQuery({
     queryKey: ["newsletter", "summary"],
+    enabled,
     queryFn: async () => {
       const response = await axiosInstance.get<NewsletterSummary>(
         "/newsletter/admin/summary/",
       );
       return response.data;
     },
-    refetchInterval: 15000,
+    refetchInterval: enabled ? 15000 : false,
   });
 
 export const useSaveNewsletterDraft = () => {
