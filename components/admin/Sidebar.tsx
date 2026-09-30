@@ -237,7 +237,6 @@ export default function Sidebar() {
         </svg>
       ),
     },
-  ];
     {
       key: "/admin/tutorials",
       label: "Tutorials & Help",
@@ -257,9 +256,13 @@ export default function Sidebar() {
         </svg>
       ),
     },
+  ];
 
   return (
-    <aside className="h-full w-72 shrink-0 overflow-y-auto overscroll-contain border-r border-gray-200 p-6">
+    <aside
+      data-tutorial="admin-sidebar"
+      className="h-full w-72 shrink-0 overflow-y-auto overscroll-contain border-r border-gray-200 p-6"
+    >
       <div className="flex min-h-full flex-col rounded-xl border border-gray-100 bg-white p-4 shadow-md">
         <nav className="space-y-1">
           {items.map((item) => {
@@ -269,6 +272,12 @@ export default function Sidebar() {
               <Link
                 key={item.key}
                 href={item.key}
+                data-tutorial={
+                  item.key === "/admin/tutorials"
+                    ? "admin-nav-tutorials"
+                    : undefined
+                }
+                onClick={(event) => isPlayback && event.preventDefault()}
                 className={cx(
                   "w-full text-left relative flex items-center gap-3 px-3 py-2.5 rounded-lg transition",
                   active
@@ -295,6 +304,8 @@ export default function Sidebar() {
         <div className="mt-auto pt-6">
           <button
             type="button"
+            data-tutorial="admin-logout"
+            disabled={isPlayback}
             className="w-full text-left flex items-center gap-3 px-3 py-2.5 text-gray-700 hover:bg-gray-50 rounded-lg"
             onClick={async () => {
               await logout();
