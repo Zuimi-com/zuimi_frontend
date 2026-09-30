@@ -29,6 +29,7 @@ import {
 import { AlertCircle, BriefcaseBusiness, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
 type FormValues = {
   primary: string;
@@ -114,7 +115,10 @@ function ConfirmDialog({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-      <div className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl">
+      <div
+        data-tutorial="catalog-confirm-dialog"
+        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-2xl"
+      >
         <div className="mb-4 flex items-start gap-3">
           <div
             className={`flex h-10 w-10 items-center justify-center rounded-full ${
@@ -190,18 +194,43 @@ function EntitySection({
   const [deactivateLoading, setDeactivateLoading] = useState(false);
   const [activateLoading, setActivateLoading] = useState(false);
   const [isExpanded, setIsExpanded] = useState(true);
+  const { isPlayback, demoState } = useAdminTutorial();
+  const tutorialSlug = title.toLowerCase();
+  const fixtureRow: EntityRow = {
+    id: `tutorial-${tutorialSlug}`,
+    primary: title === "Genres" ? "Drama" : `Tutorial ${title.slice(0, -1)}`,
+    secondary:
+      title === "Producers"
+        ? "producer@example.com"
+        : title === "Genres"
+          ? "Character-led stories"
+          : "A local example used only during this tutorial.",
+    imageUrl: null,
+    status: demoState === "reactivate" ? "inactive" : "active",
+    updatedAt: new Date().toISOString(),
+  };
+  const displayRows = isPlayback ? [fixtureRow] : rows;
 
-  const activeCount = useMemo(
-    () => rows.filter((item) => item.status === "active").length,
-    [rows],
-  );
+  const activeCount = displayRows.filter(
+    (item) => item.status === "active",
+  ).length;
 
-  const inactiveCount = rows.length - activeCount;
+  const inactiveCount = displayRows.length - activeCount;
 
   const resetForm = () => {
     setEditingId(null);
     setForm({ primary: "", secondary: "", imageFile: null });
   };
+
+  useEffect(() => {
+    if (!isPlayback || demoState !== "edit") return;
+    setEditingId(fixtureRow.id);
+    setForm({
+      primary: fixtureRow.primary,
+      secondary: fixtureRow.secondary || "",
+      imageFile: null,
+    });
+  }, [demoState, isPlayback, title]);
 
   useEffect(() => {
     if (!form.imageFile) {
@@ -219,6 +248,7 @@ function EntitySection({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPlayback) return;
 
     const primaryValue = form.primary.trim();
     if (!primaryValue) {
@@ -248,6 +278,7 @@ function EntitySection({
   };
 
   const handleDeactivateClick = async () => {
+    if (isPlayback) return;
     if (!deactivateConfirm) return;
 
     setDeactivateLoading(true);
@@ -263,6 +294,7 @@ function EntitySection({
   };
 
   const handleActivateClick = async () => {
+    if (isPlayback) return;
     if (!activateConfirm) return;
 
     setActivateLoading(true);
@@ -286,7 +318,10 @@ function EntitySection({
   };
 
   return (
-    <section className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60">
+    <section
+      data-tutorial={`catalog-${tutorialSlug}-overview`}
+      className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60"
+    >
       {/* Header */}
       <div className="bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
@@ -346,12 +381,16 @@ function EntitySection({
             </div>
 
             <div className="grid gap-4 md:grid-cols-12">
-              <div className={supportsImage ? "md:col-span-3" : "md:col-span-4"}>
+              <div
+                data-tutorial={`catalog-${tutorialSlug}-primary`}
+                className={supportsImage ? "md:col-span-3" : "md:col-span-4"}
+              >
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   {primaryLabel}
                 </label>
                 <input
                   value={form.primary}
+                  disabled={isPlayback}
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -371,12 +410,16 @@ function EntitySection({
                 />
               </div>
 
-              <div className={supportsImage ? "md:col-span-4" : "md:col-span-5"}>
+              <div
+                data-tutorial={`catalog-${tutorialSlug}-secondary`}
+                className={supportsImage ? "md:col-span-4" : "md:col-span-5"}
+              >
                 <label className="mb-2 block text-sm font-semibold text-slate-700">
                   {secondaryLabel}
                 </label>
                 <input
                   value={form.secondary}
+                  disabled={isPlayback}
                   onChange={(event) =>
                     setForm((current) => ({
                       ...current,
@@ -389,13 +432,17 @@ function EntitySection({
               </div>
 
               {supportsImage && (
-                <div className="md:col-span-3">
+                <div
+                  data-tutorial={`catalog-${tutorialSlug}-image`}
+                  className="md:col-span-3"
+                >
                   <label className="mb-2 block text-sm font-semibold text-slate-700">
                     Profile Image
                   </label>
                   <div className="relative">
                     <input
                       type="file"
+                      disabled={isPlayback}
                       accept="image/png,image/jpeg,image/webp"
                       onChange={(event) => {
                         const selected = event.target.files?.[0] || null;
@@ -437,8 +484,9 @@ function EntitySection({
                 }`}
               >
                 <button
+                  data-tutorial={`catalog-${tutorialSlug}-submit`}
                   type="submit"
-                  disabled={isBusy || !form.primary.trim()}
+                  disabled={isPlayback || isBusy || !form.primary.trim()}
                   className="inline-flex w-full flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {isBusy ? (
@@ -451,8 +499,12 @@ function EntitySection({
 
                 {editingId && (
                   <button
+                    data-tutorial={`catalog-${tutorialSlug}-cancel`}
                     type="button"
-                    onClick={resetForm}
+                    onClick={() => {
+                      if (!isPlayback) resetForm();
+                    }}
+                    disabled={isPlayback}
                     className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                   >
                     <X className="h-4 w-4" />
@@ -464,7 +516,7 @@ function EntitySection({
 
           {/* Data Section */}
           <div className="px-6 py-6">
-            {isLoading ? (
+            {isLoading && !isPlayback ? (
               <div className="space-y-3">
                 {[1, 2, 3].map((i) => (
                   <div
@@ -473,7 +525,7 @@ function EntitySection({
                   />
                 ))}
               </div>
-            ) : rows.length === 0 ? (
+            ) : displayRows.length === 0 ? (
               <div className="rounded-lg border border-dashed border-slate-300 bg-slate-50/50 py-8 text-center">
                 <div className="mb-3 flex justify-center">
                   {title === "Directors" ? (
@@ -521,7 +573,7 @@ function EntitySection({
                     </tr>
                   </thead>
                   <tbody>
-                    {rows.map((row) => (
+                    {displayRows.map((row) => (
                       <tr
                         key={row.id}
                         className="border-b border-slate-100 transition hover:bg-blue-50/30 last:border-0"
@@ -583,6 +635,7 @@ function EntitySection({
                         <td className="px-4 py-3">
                           <div className="flex items-center justify-end gap-2">
                             <button
+                              data-tutorial={`catalog-${tutorialSlug}-edit`}
                               type="button"
                               onClick={() => {
                                 setEditingId(row.id);
@@ -592,6 +645,7 @@ function EntitySection({
                                   imageFile: null,
                                 });
                               }}
+                              disabled={isPlayback}
                               className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -600,10 +654,12 @@ function EntitySection({
 
                             {row.status === "inactive" ? (
                               <button
+                                data-tutorial={`catalog-${tutorialSlug}-reactivate`}
                                 type="button"
                                 onClick={() =>
                                   setActivateConfirm(row.id)
                                 }
+                                disabled={isPlayback}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
                               >
                                 <RotateCcw className="h-3.5 w-3.5" />
@@ -613,11 +669,12 @@ function EntitySection({
                               </button>
                             ) : (
                               <button
+                                data-tutorial={`catalog-${tutorialSlug}-deactivate`}
                                 type="button"
                                 onClick={() =>
                                   setDeactivateConfirm(row.id)
                                 }
-                                disabled={isBusy}
+                                disabled={isPlayback || isBusy}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -639,25 +696,25 @@ function EntitySection({
       )}
 
       <ConfirmDialog
-        isOpen={!!deactivateConfirm}
+        isOpen={!!deactivateConfirm || (isPlayback && demoState === "deactivate")}
         title="Deactivate entry?"
         description="This entry will be marked as inactive and won't appear in listings. You can reactivate it later."
         confirmText="Deactivate"
         cancelText="Cancel"
         isDangerous
-        isLoading={deactivateLoading}
+        isLoading={deactivateLoading || isPlayback}
         onConfirm={handleDeactivateClick}
         onCancel={() => setDeactivateConfirm(null)}
       />
 
       <ConfirmDialog
-        isOpen={!!activateConfirm}
+        isOpen={!!activateConfirm || (isPlayback && demoState === "reactivate")}
         title="Reactivate entry?"
         description="This entry will be marked as active and will appear in listings."
         confirmText="Reactivate"
         cancelText="Cancel"
         isDangerous={false}
-        isLoading={activateLoading}
+        isLoading={activateLoading || isPlayback}
         onConfirm={handleActivateClick}
         onCancel={() => setActivateConfirm(null)}
       />
@@ -711,10 +768,11 @@ const mapProducerRows = (rows: CatalogProducer[] | undefined): EntityRow[] => {
 export default function CatalogManagementSection({
   mode = "all",
 }: CatalogManagementSectionProps) {
-  const actorsQuery = useGetActors();
-  const directorsQuery = useGetDirectors();
-  const genresQuery = useGetGenres();
-  const producersQuery = useGetProducers();
+  const { isPlayback } = useAdminTutorial();
+  const actorsQuery = useGetActors(!isPlayback);
+  const directorsQuery = useGetDirectors(!isPlayback);
+  const genresQuery = useGetGenres(!isPlayback);
+  const producersQuery = useGetProducers(!isPlayback);
 
   const createActor = useCreateActor();
   const updateActor = useUpdateActor();

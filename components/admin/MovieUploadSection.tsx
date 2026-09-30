@@ -2,6 +2,7 @@
 
 import {
   CatalogGenre,
+  CatalogProducer,
   CatalogProfile,
   useGetActors,
   useGetDirectors,
@@ -9,6 +10,7 @@ import {
   useGetProducers,
 } from "@/features/dashboard/service/movie-catalog";
 import {
+  Movie,
   MovieAsset,
   useCreateMovie,
   useGetMovieAssets,
@@ -33,9 +35,10 @@ import {
   Video,
   XCircle,
 } from "lucide-react";
-import { useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
 import Link from "next/link";
+import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
 type MovieFormState = {
   title: string;
@@ -107,19 +110,27 @@ function MultiSelect({
   options,
   getLabel,
   onChange,
+  tutorial,
+  disabled = false,
 }: {
   label: string;
   value: string[];
   options: Array<CatalogGenre | CatalogProfile>;
   getLabel: (option: CatalogGenre | CatalogProfile) => string;
   onChange: (value: string[]) => void;
+  tutorial?: string;
+  disabled?: boolean;
 }) {
   const [search, setSearch] = useState("");
   const visible = options.filter((option) =>
     getLabel(option).toLowerCase().includes(search.toLowerCase()),
   );
   return (
-    <fieldset className="min-w-0 rounded-xl border border-slate-200 p-4">
+    <fieldset
+      data-tutorial={tutorial}
+      disabled={disabled}
+      className="min-w-0 rounded-xl border border-slate-200 p-4"
+    >
       <legend className="px-1 text-sm font-semibold text-slate-700">
         {label}{" "}
         <span className="font-normal text-slate-500">
@@ -175,6 +186,8 @@ function FileUploadField({
   onChange,
   maxMB,
   extensions,
+  tutorial,
+  disabled = false,
 }: {
   label: string;
   help: string;
@@ -183,12 +196,17 @@ function FileUploadField({
   onChange: (file: File | null) => void;
   maxMB?: number;
   extensions: string[];
+  tutorial?: string;
+  disabled?: boolean;
 }) {
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [error, setError] = useState("");
   return (
-    <div className="min-w-0 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4">
+    <div
+      data-tutorial={tutorial}
+      className="min-w-0 rounded-xl border border-dashed border-slate-300 bg-slate-50/70 p-4"
+    >
       <label
         htmlFor={id}
         className="mb-2 block text-sm font-semibold text-slate-700"
@@ -199,6 +217,7 @@ function FileUploadField({
         ref={inputRef}
         id={id}
         type="file"
+        disabled={disabled}
         accept={accept}
         aria-describedby={`${id}-help`}
         aria-invalid={!!error}
@@ -241,6 +260,7 @@ function FileUploadField({
           </p>
           <button
             type="button"
+            disabled={disabled}
             aria-label={`Remove ${label.toLowerCase()}`}
             onClick={() => {
               onChange(null);
@@ -299,6 +319,7 @@ function AssetActions({
     <div className="flex flex-wrap justify-end gap-2">
       {canProcess && (
         <button
+          data-tutorial="movie-asset-prepare"
           type="button"
           onClick={onProcess}
           disabled={isBusy}
@@ -315,6 +336,7 @@ function AssetActions({
 
       {asset.status === "failed" && (
         <button
+          data-tutorial="movie-asset-retry"
           type="button"
           onClick={onRetry}
           disabled={isBusy}
@@ -328,6 +350,7 @@ function AssetActions({
       {asset.status === "ready" &&
         (asset.is_streamable ? (
           <button
+            data-tutorial="movie-asset-unpublish"
             type="button"
             onClick={onUnpublish}
             disabled={isBusy}
@@ -338,6 +361,7 @@ function AssetActions({
           </button>
         ) : (
           <button
+            data-tutorial="movie-asset-publish"
             type="button"
             onClick={onPublish}
             disabled={isBusy}
@@ -350,6 +374,64 @@ function AssetActions({
     </div>
   );
 }
+
+
+const TUTORIAL_MOVIE: Movie = {
+  id: "tutorial-movie",
+  title: "The Lagos Signal",
+  description: "A local tutorial movie that is never sent to the server.",
+  price: "4.99",
+  duration: 102,
+  genre: "Drama",
+  director: "Tutorial Director",
+  cast: "Tutorial Actor",
+  rating: "PG-13",
+  language: "English",
+  release_date: "2026-09-30",
+  poster_image: null,
+  movie_title_svg: null,
+  trailer_url: null,
+  producer: "tutorial-producer",
+  copies_sold: 0,
+};
+
+const TUTORIAL_PRODUCER: CatalogProducer = {
+  id: "tutorial-producer",
+  full_name: "Tutorial Producer",
+  email: "producer@example.com",
+  phone_number: null,
+  is_active: true,
+  status: "active",
+  created_at: "2026-09-30T00:00:00Z",
+  updated_at: "2026-09-30T00:00:00Z",
+};
+
+const TUTORIAL_DIRECTOR: CatalogProfile = {
+  id: "tutorial-director",
+  full_name: "Tutorial Director",
+  bio: "Used only during tutorial playback.",
+  profile_image: null,
+  is_active: true,
+  status: "active",
+  created_at: "2026-09-30T00:00:00Z",
+  updated_at: "2026-09-30T00:00:00Z",
+};
+
+const TUTORIAL_ACTOR: CatalogProfile = {
+  ...TUTORIAL_DIRECTOR,
+  id: "tutorial-actor",
+  full_name: "Tutorial Actor",
+};
+
+const TUTORIAL_GENRE: CatalogGenre = {
+  id: "tutorial-genre",
+  name: "Drama",
+  description: "Used only during tutorial playback.",
+  is_active: true,
+  status: "active",
+  created_at: "2026-09-30T00:00:00Z",
+  updated_at: "2026-09-30T00:00:00Z",
+};
 
 export default function MovieUploadSection() {
   const [step, setStep] = useState<"details" | "video">("details");
@@ -366,13 +448,14 @@ export default function MovieUploadSection() {
   const [selectedMovieId, setSelectedMovieId] = useState("");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
+  const { isPlayback, demoState } = useAdminTutorial();
 
-  const moviesQuery = useGetMovies();
-  const assetsQuery = useGetMovieAssets();
-  const directorsQuery = useGetDirectors();
-  const actorsQuery = useGetActors();
-  const genresQuery = useGetGenres();
-  const producersQuery = useGetProducers();
+  const moviesQuery = useGetMovies(!isPlayback);
+  const assetsQuery = useGetMovieAssets(!isPlayback);
+  const directorsQuery = useGetDirectors(!isPlayback);
+  const actorsQuery = useGetActors(!isPlayback);
+  const genresQuery = useGetGenres(!isPlayback);
+  const producersQuery = useGetProducers(!isPlayback);
 
   const createMovie = useCreateMovie();
   const uploadAsset = useUploadMovieAsset();
@@ -383,40 +466,124 @@ export default function MovieUploadSection() {
 
   const sortedMovies = useMemo(
     () =>
-      [...(moviesQuery.data || [])].sort((a, b) =>
-        a.title.localeCompare(b.title),
-      ),
-    [moviesQuery.data],
+      isPlayback
+        ? [TUTORIAL_MOVIE]
+        : [...(moviesQuery.data || [])].sort((a, b) =>
+            a.title.localeCompare(b.title),
+          ),
+    [isPlayback, moviesQuery.data],
   );
 
   const directors = useMemo(
-    () => (directorsQuery.data || []).filter((item) => item.is_active),
-    [directorsQuery.data],
+    () =>
+      isPlayback
+        ? [TUTORIAL_DIRECTOR]
+        : (directorsQuery.data || []).filter((item) => item.is_active),
+    [directorsQuery.data, isPlayback],
   );
 
   const actors = useMemo(
-    () => (actorsQuery.data || []).filter((item) => item.is_active),
-    [actorsQuery.data],
+    () =>
+      isPlayback
+        ? [TUTORIAL_ACTOR]
+        : (actorsQuery.data || []).filter((item) => item.is_active),
+    [actorsQuery.data, isPlayback],
   );
 
   const genres = useMemo(
-    () => (genresQuery.data || []).filter((item) => item.is_active),
-    [genresQuery.data],
+    () =>
+      isPlayback
+        ? [TUTORIAL_GENRE]
+        : (genresQuery.data || []).filter((item) => item.is_active),
+    [genresQuery.data, isPlayback],
   );
 
   const producers = useMemo(
-    () => (producersQuery.data || []).filter((item) => item.is_active),
-    [producersQuery.data],
+    () =>
+      isPlayback
+        ? [TUTORIAL_PRODUCER]
+        : (producersQuery.data || []).filter((item) => item.is_active),
+    [isPlayback, producersQuery.data],
   );
+
+  const tutorialAsset = useMemo<MovieAsset>(() => {
+    const failed = demoState === "asset-failed" || demoState === "asset-failed-open";
+    const published = demoState === "asset-published";
+    const ready = demoState === "asset-ready" || published;
+    const status: MovieAsset["status"] = failed
+      ? "failed"
+      : ready
+        ? "ready"
+        : "uploaded";
+    return {
+      id: "tutorial-asset",
+      movie: TUTORIAL_MOVIE.id,
+      movie_title: TUTORIAL_MOVIE.title,
+      source_filename: "lagos-signal-master.mp4",
+      source_checksum: "tutorial-checksum",
+      source_size_bytes: 734003200,
+      source_duration_seconds: 6120,
+      status,
+      is_streamable: published,
+      failure_reason: failed ? "The source could not be prepared." : "",
+      latest_job: {
+        id: "tutorial-job",
+        asset: "tutorial-asset",
+        status: failed ? "failed" : ready ? "completed" : "queued",
+        attempts: failed ? 2 : 1,
+        error_message: failed ? "Video preparation failed." : "",
+        log: "",
+        created_at: "2026-09-30T00:00:00Z",
+        started_at: null,
+        completed_at: ready ? "2026-09-30T00:05:00Z" : null,
+        updated_at: "2026-09-30T00:05:00Z",
+      },
+      renditions: ready
+        ? [{
+            id: "tutorial-rendition",
+            label: "1080p",
+            width: 1920,
+            height: 1080,
+            video_bitrate_kbps: 5000,
+            audio_bitrate_kbps: 192,
+            playlist_path: "tutorial/1080p.m3u8",
+            created_at: "2026-09-30T00:05:00Z",
+          }]
+        : [],
+      manifests: published
+        ? [{
+            id: "tutorial-manifest",
+            protocol: "hls",
+            manifest_path: "tutorial/master.m3u8",
+            is_active: true,
+            created_at: "2026-09-30T00:05:00Z",
+          }]
+        : [],
+      created_at: "2026-09-30T00:00:00Z",
+      updated_at: "2026-09-30T00:05:00Z",
+    };
+  }, [demoState]);
 
   const sortedAssets = useMemo(
     () =>
-      [...(assetsQuery.data || [])].sort(
-        (a, b) =>
-          new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
-      ),
-    [assetsQuery.data],
+      isPlayback
+        ? [tutorialAsset]
+        : [...(assetsQuery.data || [])].sort(
+            (a, b) =>
+              new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime(),
+          ),
+    [assetsQuery.data, isPlayback, tutorialAsset],
   );
+
+  useEffect(() => {
+    if (!isPlayback) return;
+    if (demoState?.startsWith("video")) {
+      setStep("video");
+      setSelectedMovieId(TUTORIAL_MOVIE.id);
+    } else if (demoState === "details") {
+      setStep("details");
+    }
+  }, [demoState, isPlayback]);
 
   const updateMovieForm = (patch: Partial<MovieFormState>) => {
     setMovieForm((current) => ({ ...current, ...patch }));
@@ -424,6 +591,7 @@ export default function MovieUploadSection() {
 
   const handleCreateMovie = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPlayback) return;
     setFormError("");
     setNotice("");
 
@@ -492,6 +660,7 @@ export default function MovieUploadSection() {
 
   const handleUploadAsset = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    if (isPlayback) return;
     setFormError("");
     setNotice("");
 
@@ -532,6 +701,7 @@ export default function MovieUploadSection() {
     action: () => Promise<unknown>,
     message: string,
   ) => {
+    if (isPlayback) return;
     setFormError("");
     setActiveActionId(assetId);
     try {

@@ -75,9 +75,10 @@ const buildProfileFormData = (data: UpsertProfilePayload) => {
   return formData;
 };
 
-export const useGetActors = () => {
+export const useGetActors = (enabled = true) => {
   return useQuery({
     queryKey: ["movie-catalog", "actors"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<CatalogProfile[]>(
         `${ACTORS_ENDPOINT}?include_inactive=true`,
@@ -178,9 +179,10 @@ export const useActivateActor = () => {
   });
 };
 
-export const useGetDirectors = () => {
+export const useGetDirectors = (enabled = true) => {
   return useQuery({
     queryKey: ["movie-catalog", "directors"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<CatalogProfile[]>(
         `${DIRECTORS_ENDPOINT}?include_inactive=true`,
@@ -281,9 +283,10 @@ export const useActivateDirector = () => {
   });
 };
 
-export const useGetGenres = () => {
+export const useGetGenres = (enabled = true) => {
   return useQuery({
     queryKey: ["movie-catalog", "genres"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<CatalogGenre[]>(
         `${GENRES_ENDPOINT}?include_inactive=true`,
@@ -373,9 +376,10 @@ export const useActivateGenre = () => {
   });
 };
 
-export const useGetProducers = () => {
+export const useGetProducers = (enabled = true) => {
   return useQuery({
     queryKey: ["movie-catalog", "producers"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<CatalogProducer[]>(
         `${PRODUCERS_ENDPOINT}?include_inactive=true`,

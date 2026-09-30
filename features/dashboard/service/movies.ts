@@ -94,9 +94,10 @@ const MOVIES_ENDPOINT = "/movies/";
 const MOVIE_UPLOAD_ENDPOINT = "/movies/upload/";
 const ASSETS_ENDPOINT = "/movies/admin/media/assets/";
 
-export const useGetMovies = () => {
+export const useGetMovies = (enabled = true) => {
   return useQuery({
     queryKey: ["movies"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<Movie[]>(MOVIES_ENDPOINT);
       return res.data;
@@ -145,14 +146,15 @@ export const useCreateMovie = () => {
   });
 };
 
-export const useGetMovieAssets = () => {
+export const useGetMovieAssets = (enabled = true) => {
   return useQuery({
     queryKey: ["movie-assets"],
+    enabled,
     queryFn: async () => {
       const res = await axiosInstance.get<MovieAsset[]>(ASSETS_ENDPOINT);
       return res.data;
     },
-    refetchInterval: 10000,
+    refetchInterval: enabled ? 10000 : false,
   });
 };
 
