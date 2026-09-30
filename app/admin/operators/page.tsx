@@ -39,7 +39,7 @@ const fixtures: Operator[] = [
 export default function OperatorsPage() {
   const { admin } = useAdminAuth();
   const { isPlayback, demoState } = useAdminTutorial();
-  const canManage = admin?.capabilities.manage_operators === true;
+  const canManage = admin?.capabilities?.manage_operators === true;
   const [accounts, setAccounts] = useState<Operator[]>([]);
   const [email, setEmail] = useState("");
   const [role, setRole] = useState<Operator["role"]>("moderator");

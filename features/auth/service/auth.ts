@@ -12,8 +12,8 @@ export interface LoginResponse {
     email: string;
     is_staff: true;
     is_superuser: boolean;
-    capabilities: {
-      manage_operators: boolean;
+    capabilities?: {
+      manage_operators?: boolean;
     };
   };
 }
