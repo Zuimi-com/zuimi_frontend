@@ -220,7 +220,7 @@ export default function Sidebar() {
     },
     {
       key: "/admin/images",
-      label: "Uplaod Image",
+      label: "Newsletter Images",
       icon: (
         <svg
           className="w-5 h-5"
@@ -238,6 +238,25 @@ export default function Sidebar() {
       ),
     },
   ];
+    {
+      key: "/admin/tutorials",
+      label: "Tutorials & Help",
+      icon: (
+        <svg
+          className="h-5 w-5"
+          fill="none"
+          stroke="currentColor"
+          viewBox="0 0 24 24"
+        >
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth="2"
+            d="M4 5.5A2.5 2.5 0 016.5 3H11v16H6.5A2.5 2.5 0 004 21.5v-16zm16 0A2.5 2.5 0 0017.5 3H13v16h4.5a2.5 2.5 0 012.5 2.5v-16z"
+          />
+        </svg>
+      ),
+    },
 
   return (
     <aside className="h-full w-72 shrink-0 overflow-y-auto overscroll-contain border-r border-gray-200 p-6">
