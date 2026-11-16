@@ -21,6 +21,7 @@ export default function Sidebar() {
   const { logout, admin } = useAdminAuth();
   const { isPlayback } = useAdminTutorial();
   const items: NavItem[] = [
+    { key: "/admin/creator-applications", label: "Creator Applications", icon: <span aria-hidden="true" className="text-xl">◇</span> },
     ...(admin?.capabilities?.manage_operators
       ? [{ key: "/admin/operators" as AdminSection, label: "Operators", icon: <span aria-hidden="true" className="text-xl">◈</span> }]
       : []),
