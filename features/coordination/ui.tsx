@@ -1,4 +1,62 @@
-import {label} from './data';
-export const Pill = ({status}: {status: string}) => <span className="zb-pill" data-tone={['done','resolved','published','approved'].includes(status)?'green':['blocked','declined'].includes(status)?'red':['in_progress','reviewing','scheduled'].includes(status)?'blue':'pink'}>{label(status)}</span>;
-export function Panel({title, children, action}: {title:string;children:React.ReactNode;action?:React.ReactNode}) {return <section className="zb-panel"><header className="zb-panel-head"><h2>{title}</h2>{action}</header>{children}</section>;}
-export function Stats({values}: {values:Array<{label:string;value:string|number;note:string;color?:string}>}) {return <div className="zb-stats">{values.map(v => <div className="zb-stat" key={v.label} style={{'--accent':v.color} as React.CSSProperties}><span>{v.label}</span><strong>{v.value}</strong><span>{v.note}</span></div>)}</div>;}
+import { label } from "./data";
+export const Pill = ({ status }: { status: string }) => (
+  <span
+    className="zb-pill"
+    data-tone={
+      ["done", "resolved", "published", "approved"].includes(status)
+        ? "green"
+        : ["blocked", "declined"].includes(status)
+          ? "red"
+          : ["in_progress", "reviewing", "scheduled"].includes(status)
+            ? "blue"
+            : "pink"
+    }
+  >
+    {label(status)}
+  </span>
+);
+export function Panel({
+  title,
+  children,
+  action,
+}: {
+  title: string;
+  children: React.ReactNode;
+  action?: React.ReactNode;
+}) {
+  return (
+    <section className="zb-panel">
+      <header className="zb-panel-head">
+        <h2>{title}</h2>
+        {action}
+      </header>
+      {children}
+    </section>
+  );
+}
+export function Stats({
+  values,
+}: {
+  values: Array<{
+    label: string;
+    value: string | number;
+    note: string;
+    color?: string;
+  }>;
+}) {
+  return (
+    <div className="zb-stats">
+      {values.map((v) => (
+        <div
+          className="zb-stat"
+          key={v.label}
+          style={{ "--accent": v.color } as React.CSSProperties}
+        >
+          <span>{v.label}</span>
+          <strong>{v.value}</strong>
+          <span>{v.note}</span>
+        </div>
+      ))}
+    </div>
+  );
+}
