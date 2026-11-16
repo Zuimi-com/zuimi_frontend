@@ -8,6 +8,7 @@ const navLinks = [
   { href: "#about", label: "About" },
   { href: "#contact", label: "Contact" },
   { href: "#features", label: "Features" },
+  { href: "/creators/apply/", label: "For Filmmakers" },
 ];
 
 const socialLinks = [
@@ -35,7 +36,7 @@ export const Footer = () => {
           </div>
 
           {/* Navigation Links */}
-          <nav className="flex items-center gap-6">
+          <nav className="flex flex-wrap justify-center items-center gap-6">
             {navLinks.map((link) => (
               <Link
                 key={link.label}

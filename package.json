@@ -6,7 +6,8 @@
     "dev": "next dev --turbopack",
     "build": "next build --turbopack",
     "start": "next start",
-    "test:tutorials": "tsc -p tsconfig.tutorial-tests.json && node --test /tmp/zuimi-admin-tutorial-tests/tests/adminTutorials.test.js"
+    "test:tutorials": "tsc -p tsconfig.tutorial-tests.json && node --test /tmp/zuimi-admin-tutorial-tests/tests/adminTutorials.test.js",
+    "test:coordination": "tsc -p tsconfig.coordination-tests.json && node --test /tmp/zuimi-coordination-tests/tests/coordination.test.js"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.90.20",

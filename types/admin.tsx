@@ -10,4 +10,5 @@ export type AdminSection =
   | "/admin/subscribers"
   | "/admin/images"
   | "/admin/operators"
-  | "/admin/tutorials";
+  | "/admin/tutorials"
+  | "/admin/creator-applications";

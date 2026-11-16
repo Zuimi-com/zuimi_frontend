@@ -1,0 +1,291 @@
+"use client";
+import { FormEvent, useEffect, useRef, useState } from "react";
+import { X } from "lucide-react";
+import {
+  api,
+  Draft,
+  Item,
+  Kind,
+  kinds,
+  label,
+  roles,
+  statuses,
+  weekOf,
+} from "./data";
+export default function ItemEditor({
+  initial,
+  items,
+  onClose,
+  onSave,
+}: {
+  initial: Draft | Item;
+  items: Item[];
+  onClose: () => void;
+  onSave: (value: Draft | Item) => Promise<void>;
+}) {
+  const [value, setValue] = useState(initial);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [history, setHistory] = useState<
+    Array<{
+      revision: number;
+      actor: string;
+      created_at: string;
+      snapshot: Item;
+    }>
+  >([]);
+  const ref = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    ref.current?.showModal();
+    if ("id" in initial)
+      api<typeof history>(`work/${initial.id}/history/`)
+        .then(setHistory)
+        .catch(() => setHistory([]));
+  }, [initial]);
+  const change = (key: string, val: unknown) =>
+    setValue((v) => ({ ...v, [key]: val }));
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    setError("");
+    try {
+      await onSave(value);
+      onClose();
+    } catch (e) {
+      setError((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  }
+  return (
+    <dialog
+      ref={ref}
+      className="zb-dialog zuimi-board"
+      onCancel={(e) => {
+        e.preventDefault();
+        if (!busy) onClose();
+      }}
+    >
+      <form onSubmit={submit}>
+        <header>
+          <div>
+            <p className="zb-eyebrow">Shared accountability</p>
+            <h2>{"id" in initial ? "Edit work item" : "Create work item"}</h2>
+          </div>
+          <button
+            type="button"
+            aria-label="Close editor"
+            disabled={busy}
+            onClick={onClose}
+          >
+            <X size={22} />
+          </button>
+        </header>
+        <div className="zb-fields">
+          <label className="zb-field zb-field-full">
+            Title
+            <input
+              required
+              maxLength={240}
+              value={value.title}
+              onChange={(e) => change("title", e.target.value)}
+              autoFocus
+            />
+          </label>
+          <label className="zb-field">
+            Type
+            <select
+              value={value.kind}
+              onChange={(e) => {
+                const kind = e.target.value as Kind;
+                setValue((v) => ({ ...v, kind, status: statuses(kind)[0] }));
+              }}
+            >
+              {kinds.map((k) => (
+                <option key={k}>{k}</option>
+              ))}
+            </select>
+          </label>
+          <label className="zb-field">
+            Status
+            <select
+              value={value.status}
+              onChange={(e) => change("status", e.target.value)}
+            >
+              {statuses(value.kind).map((s) => (
+                <option key={s} value={s}>
+                  {label(s)}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="zb-field">
+            Workstream / accountable role
+            <select
+              value={value.owner}
+              onChange={(e) => change("owner", e.target.value)}
+            >
+              {roles.map((r) => (
+                <option key={r}>{r}</option>
+              ))}
+            </select>
+          </label>
+          <label className="zb-field">
+            Person responsible
+            <input
+              maxLength={120}
+              placeholder="Name of the owner"
+              value={value.owner_name}
+              onChange={(e) => change("owner_name", e.target.value)}
+            />
+          </label>
+          <label className="zb-field">
+            {value.kind === "post" ? "Planned publishing date" : "Deadline"} ·
+            Lagos
+            <input
+              type="date"
+              value={value.deadline ?? ""}
+              onChange={(e) => change("deadline", e.target.value || null)}
+            />
+          </label>
+          <label className="zb-field">
+            Week of · Monday
+            <input
+              type="date"
+              value={value.week_start ?? ""}
+              onChange={(e) =>
+                change(
+                  "week_start",
+                  e.target.value ? weekOf(e.target.value) : null,
+                )
+              }
+            />
+          </label>
+          <label className="zb-field zb-field-full">
+            {value.kind === "meeting"
+              ? "Meeting notes · decisions, attendees, action items"
+              : value.kind === "post"
+                ? "Post copy"
+                : value.kind === "scope"
+                  ? "Acceptance criteria / definition of done"
+                  : "Details / context"}
+            <textarea
+              maxLength={20000}
+              value={value.details}
+              onChange={(e) => change("details", e.target.value)}
+            />
+          </label>
+          <label className="zb-field zb-field-full">
+            Next action / follow-up
+            <input
+              maxLength={1000}
+              value={value.next_action}
+              onChange={(e) => change("next_action", e.target.value)}
+              placeholder="One concrete step the owner will take next"
+            />
+          </label>
+          <label className="zb-field zb-field-full">
+            Dependencies · hold Ctrl / Cmd to select multiple
+            <select
+              multiple
+              value={value.dependencies}
+              onChange={(e) =>
+                change(
+                  "dependencies",
+                  Array.from(e.target.selectedOptions, (o) => o.value),
+                )
+              }
+            >
+              {items
+                .filter((i) => !("id" in initial) || i.id !== initial.id)
+                .map((i) => (
+                  <option key={i.id} value={i.id}>
+                    {i.title} · {label(i.status)}
+                  </option>
+                ))}
+            </select>
+            <span className="zb-muted">
+              Clear all selections to remove dependencies. Incomplete
+              prerequisites prevent completion.
+            </span>
+          </label>
+          {value.kind === "post" && (
+            <>
+              <label className="zb-field">
+                Published on · Lagos
+                <input
+                  type="datetime-local"
+                  value={
+                    value.published_at
+                      ? new Date(
+                          new Date(value.published_at).getTime() + 3600000,
+                        )
+                          .toISOString()
+                          .slice(0, 16)
+                      : ""
+                  }
+                  onChange={(e) =>
+                    change(
+                      "published_at",
+                      e.target.value
+                        ? new Date(`${e.target.value}:00+01:00`).toISOString()
+                        : null,
+                    )
+                  }
+                />
+              </label>
+              <label className="zb-field">
+                Live X / Twitter post URL
+                <input
+                  type="url"
+                  maxLength={1000}
+                  value={value.post_url}
+                  onChange={(e) => change("post_url", e.target.value)}
+                  placeholder="https://x.com/…/status/…"
+                />
+              </label>
+              <p className="zb-notice zb-field-full">
+                Publishing status is tracked here. Publish on X yourself, then
+                record the live URL and time as evidence.
+              </p>
+            </>
+          )}
+        </div>
+        {error && (
+          <div role="alert" className="zb-error">
+            {error}
+          </div>
+        )}
+        {history.length > 0 && (
+          <details>
+            <summary>Revision history · {history.length} saved changes</summary>
+            {history.map((h) => (
+              <p className="my-3" key={h.revision}>
+                v{h.revision} ·{" "}
+                {new Date(h.created_at).toLocaleString("en-GB", {
+                  timeZone: "Africa/Lagos",
+                })}{" "}
+                · {h.snapshot.title} · {label(h.snapshot.status)} ·{" "}
+                {h.snapshot.owner}
+                {h.snapshot.owner_name ? ` / ${h.snapshot.owner_name}` : ""}
+              </p>
+            ))}
+          </details>
+        )}
+        <footer>
+          <button
+            type="button"
+            className="zb-button"
+            disabled={busy}
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button className="zb-button zb-gradient" disabled={busy}>
+            {busy ? "Saving…" : "Save item"}
+          </button>
+        </footer>
+      </form>
+    </dialog>
+  );
+}

@@ -22,4 +22,6 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npx tsc --noEmit
+      - run: npm run test:coordination
+      - run: npm run test:tutorials
       - run: npm run build
