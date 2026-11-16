@@ -67,6 +67,7 @@ export default function Board() {
   const [logKind, setLogKind] = useState<Kind>("decision");
   const [week, setWeek] = useState(weekOf(todayLagos()));
   const [seeding, setSeeding] = useState(false);
+  const [savingScope, setSavingScope] = useState(false);
   const load = useCallback(async () => {
     setSyncing(true);
     try {
@@ -200,7 +201,32 @@ export default function Board() {
               {list.map((i) => (
                 <tr key={i.id}>
                   <td>
-                    <button onClick={() => setEditor(i)}>{i.title}</button>
+                    <div className="flex items-center gap-3">
+                      {i.kind === "scope" && (
+                        <input
+                          type="checkbox"
+                          aria-label={`Accept scope: ${i.title}`}
+                          checked={closed(i)}
+                          disabled={savingScope}
+                          style={{ width: 16, height: 16, flexShrink: 0 }}
+                          onChange={async (e) => {
+                            const accepted = e.target.checked;
+                            setSavingScope(true);
+                            try {
+                              await save({
+                                ...i,
+                                status: accepted ? "done" : "planned",
+                              });
+                            } catch (error) {
+                              setError((error as Error).message);
+                            } finally {
+                              setSavingScope(false);
+                            }
+                          }}
+                        />
+                      )}
+                      <button onClick={() => setEditor(i)}>{i.title}</button>
+                    </div>
                     <small>{i.next_action || label(i.kind)}</small>
                   </td>
                   <td>
