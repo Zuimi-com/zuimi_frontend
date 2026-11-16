@@ -1,0 +1,4 @@
+{
+ "compilerOptions":{"target":"ES2021","module":"CommonJS","moduleResolution":"Node","strict":true,"esModuleInterop":true,"skipLibCheck":true,"noEmit":false,"isolatedModules":false,"rootDir":".","outDir":"/tmp/zuimi-coordination-tests"},
+ "include":["features/coordination/data.ts","tests/coordination.test.ts"]
+}
