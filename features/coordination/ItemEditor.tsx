@@ -1,7 +1,7 @@
 'use client';
 import { FormEvent, useEffect, useRef, useState } from 'react';
 import { X } from 'lucide-react';
-import { api, Draft, Item, Kind, kinds, label, roles, statuses } from './data';
+import { api, Draft, Item, Kind, kinds, label, roles, statuses, weekOf } from './data';
 export default function ItemEditor({initial, items, onClose, onSave}: {initial: Draft | Item; items: Item[]; onClose: () => void; onSave: (value: Draft | Item) => Promise<void>}) {
  const [value, setValue] = useState(initial); const [busy, setBusy] = useState(false); const [error, setError] = useState(''); const [history, setHistory] = useState<Array<{revision: number; actor: string; created_at: string; snapshot: Item}>>([]); const ref = useRef<HTMLDialogElement>(null);
  useEffect(() => {ref.current?.showModal(); if ('id' in initial) api<typeof history>(`work/${initial.id}/history/`).then(setHistory).catch(() => setHistory([]));}, [initial]);
@@ -14,7 +14,7 @@ export default function ItemEditor({initial, items, onClose, onSave}: {initial: 
  <label className="zb-field">Workstream / accountable role<select value={value.owner} onChange={e => change('owner',e.target.value)}>{roles.map(r => <option key={r}>{r}</option>)}</select></label>
  <label className="zb-field">Person responsible<input maxLength={120} placeholder="Name of the owner" value={value.owner_name} onChange={e => change('owner_name',e.target.value)}/></label>
  <label className="zb-field">{value.kind === 'post' ? 'Planned publishing date' : 'Deadline'} · Lagos<input type="date" value={value.deadline ?? ''} onChange={e => change('deadline',e.target.value || null)}/></label>
- <label className="zb-field">Week of · Monday<input type="date" value={value.week_start ?? ''} onChange={e => change('week_start',e.target.value || null)}/></label>
+ <label className="zb-field">Week of · Monday<input type="date" value={value.week_start ?? ''} onChange={e => change('week_start',e.target.value ? weekOf(e.target.value) : null)}/></label>
  <label className="zb-field zb-field-full">{value.kind === 'meeting' ? 'Meeting notes · decisions, attendees, action items' : value.kind === 'post' ? 'Post copy' : value.kind === 'scope' ? 'Acceptance criteria / definition of done' : 'Details / context'}<textarea maxLength={20000} value={value.details} onChange={e => change('details',e.target.value)}/></label>
  <label className="zb-field zb-field-full">Next action / follow-up<input maxLength={1000} value={value.next_action} onChange={e => change('next_action',e.target.value)} placeholder="One concrete step the owner will take next"/></label>
  <label className="zb-field zb-field-full">Dependencies · hold Ctrl / Cmd to select multiple<select multiple value={value.dependencies} onChange={e => change('dependencies',Array.from(e.target.selectedOptions,o => o.value))}>{items.filter(i => !('id' in initial) || i.id !== initial.id).map(i => <option key={i.id} value={i.id}>{i.title} · {label(i.status)}</option>)}</select><span className="zb-muted">Clear all selections to remove dependencies. Incomplete prerequisites prevent completion.</span></label>
