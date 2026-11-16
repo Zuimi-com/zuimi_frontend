@@ -5,6 +5,8 @@ import Image from 'next/image';
 import { api, Application, blockedBy, Campaign, closed, dateLabel, Draft, emptyItem, Item, Kind, label, overdue, Role, roles, scopeSuggestions, todayLagos, weekOf } from './data';
 import ItemEditor from './ItemEditor';
 import CEOStudio from './CEOStudio';
+import Campaigns from './Campaigns';
+import CreatorPipeline from './CreatorPipeline';
 import './workspace.css';
 const sections = [{id:'overview',label:'Accountability',icon:LayoutDashboard},{id:'work',label:'Team workstreams',icon:Users},{id:'scope',label:'MVP scope',icon:ListChecks},{id:'ceo',label:'CEO · X studio',icon:XIcon},{id:'creators',label:'Creator pipeline',icon:Clapperboard},{id:'campaigns',label:'Campaign links',icon:Link2},{id:'logs',label:'Decisions & notes',icon:MessageSquareText},{id:'weekly',label:'Weekly goals',icon:Flag}];
 export const Pill = ({status}: {status: string}) => <span className="zb-pill" data-tone={['done','resolved','published','approved'].includes(status)?'green':['blocked','declined'].includes(status)?'red':['in_progress','reviewing','scheduled'].includes(status)?'blue':'pink'}>{label(status)}</span>;
@@ -28,6 +30,8 @@ export default function Board() {
  {section==='work'&&<><div className="zb-role-grid">{roles.map((r,index)=>{const work=items.filter(i=>i.owner===r&&!closed(i));return <button className="zb-role-card" key={r} aria-pressed={owner===r} onClick={()=>setOwner(owner===r?'All':r)}><span className="zb-avatar">{['CE','DE','CT','PM'][index]}</span><h2>{r}</h2><p className="zb-muted">{work.length} open · {work.filter(i=>overdue(i,today)).length} overdue</p></button>;})}</div>{toolbar}<Table list={filtered(items.filter(i=>['task','commitment'].includes(i.kind)))}/></>}
  {section==='scope'&&<><div className="zb-banner"><h2>A smaller scope. A real product.</h2><p>Keep acceptance criteria explicit: viewer access, transactional purchases, playback, creator rights, revenue visibility and moderation. Imported suggestions start as planned; review them with the team.</p><button disabled={seeding} onClick={()=>void seed()} className="zb-button mt-4">{seeding?'Adding suggestions…':'Add suggested MVP checklist'}</button></div>{toolbar}<Table list={filtered(scope)}/></>}
  {section==='ceo'&&<CEOStudio items={items} onEdit={setEditor} onCreate={setEditor}/>}
+ {section==='campaigns'&&<Campaigns campaigns={campaigns} onRefresh={load}/>}
+ {section==='creators'&&<CreatorPipeline applications={apps} onRefresh={load}/>}
  {section==='logs'&&<><div className="zb-tabs">{(['decision','blocker','meeting'] as Kind[]).map(k=><button key={k} aria-pressed={logKind===k} onClick={()=>setLogKind(k)}>{label(k)}s</button>)}</div>{toolbar}<Table list={filtered(items.filter(i=>i.kind===logKind))}/></>}
  {section==='weekly'&&<><div className="zb-week-head"><p className="zb-muted">Week beginning {dateLabel(week)} · Goals and commitments stay connected to their owners.</p><label className="zb-field">Week of<input type="date" value={week} onChange={e=>e.target.value&&setWeek(weekOf(e.target.value))}/></label></div><div className="zb-actions mb-5"><button className="zb-button" onClick={()=>add('commitment')}>Add commitment</button></div>{toolbar}<Table list={filtered(items.filter(i=>['goal','commitment'].includes(i.kind)&&i.week_start===week))}/></>}
  </main></div>{editor&&<ItemEditor initial={editor} items={items} onClose={()=>setEditor(null)} onSave={save}/>}</div>;
