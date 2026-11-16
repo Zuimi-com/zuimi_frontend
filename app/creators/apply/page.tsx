@@ -1,7 +1,240 @@
-import type {Metadata} from 'next';
-import Image from 'next/image';
-import {ArrowDown,ArrowUpRight,ChartNoAxesCombined,Clapperboard,Globe2,Ticket} from 'lucide-react';
-import CreatorForm from '@/features/coordination/CreatorForm';
-import './creators.css';
-export const metadata:Metadata={title:'Bring your film to Zuimi · For African storytellers',description:'Apply to the Zuimi creator pipeline. Africa-first film distribution, transactional pay-per-view and a clearer connection between filmmakers and audiences.'};
-export default function CreatorPage(){return <main className="zuimi-creators"><nav className="zc-nav"><a href="/" aria-label="Zuimi home"><Image src="/zuimi-logo.svg" width={129} height={36} alt="Zuimi" priority/></a><div><a href="#why">Why Zuimi</a><a href="#apply" className="zc-cta">Bring your film <ArrowUpRight size={15}/></a></div></nav><section className="zc-hero"><div className="zc-hero-image"/><div className="zc-hero-content"><p className="zc-eyebrow"><span/> A new chapter for African cinema</p><h1>Your story deserves<br/>more than a <em>screening.</em><br/><span>An audience.</span></h1><p>You’ve done the hard work of bringing a story to life. We’re building Zuimi to help African films find their audience — and give the people behind them a clearer path to distribution.</p><div className="zc-actions"><a className="zc-cta" href="#apply">Join our creator pipeline <ArrowUpRight size={17}/></a><a href="#why" className="zc-secondary">Discover the vision <ArrowDown size={15}/></a></div><p className="zc-small">Africa-first. Creator-minded. Built for the stories that stay with us.</p></div><div className="zc-hero-caption"><Clapperboard size={18}/><span>Our stories.<br/><strong>On our terms.</strong></span></div></section><section className="zc-intro" id="why"><p className="zc-eyebrow">The story after the final cut</p><div className="zc-split"><h2>Making a film is hard.<br/><span>Getting it seen shouldn’t<br/>be the end of the story.</span></h2><div><p>Across Africa, powerful films can struggle to reach the audiences who would love them. Distribution is fragmented, visibility is limited, and creators are often left with too little insight into what happens next.</p><p>Zuimi is building an Africa-first film-distribution platform, starting with Nigeria. Our transactional pay-per-view model lets viewers pay for the individual films they choose, without a subscription.</p></div></div><div className="zc-benefits">{[{icon:Globe2,n:'01',title:'Rooted here. Reaching further.',text:'A home for African cinema, with local stories and the ambition to connect them with audiences beyond borders.'},{icon:Ticket,n:'02',title:'Every film has its moment.',text:'Pay-per-view puts the individual film at the centre. We’re building a direct path from discovery to a paid viewing.'},{icon:ChartNoAxesCombined,n:'03',title:'A clearer view of your film.',text:'Our product direction prioritises transparent revenue reporting and audience insight, so creators can understand how their work performs.'}].map(v=><article key={v.n}><div><v.icon size={23}/><span>{v.n}</span></div><h3>{v.title}</h3><p>{v.text}</p></article>)}</div></section><section className="zc-process"><div><p className="zc-eyebrow">Build the next chapter with us</p><h2>For the filmmakers<br/>who keep <em>going.</em></h2><p>Independent directors. Producers. Production companies. Emerging storytellers. If you own or represent distribution rights to an African film, we’d like to hear from you.</p></div><ol>{[['Tell us about your work','Share your background, your film and where it is in production. No film upload is needed to apply.'],['We review and connect','Our team reviews your application and reaches out using your contact details to explore fit and next steps.'],['Agree the next steps together','Rights, distribution terms, release timing and commercial arrangements are discussed separately before any film goes live.']].map(([title,text],i)=><li key={title}><span>0{i+1}</span><div><h3>{title}</h3><p>{text}</p></div></li>)}</ol></section><section className="zc-apply" id="apply"><aside><p className="zc-eyebrow">Creator applications</p><h2>Let’s start<br/>with <span>your story.</span></h2><p>Tell us who you are and what you’re making. We’re onboarding interest as we build the MVP — an application is the beginning of a conversation, not a promise of selection or a live distribution service.</p><div className="zc-callout"><Clapperboard size={23}/><p>Your film remains yours. Submitting this form does not transfer rights or create a distribution agreement.</p></div><p className="zc-small">Have more than one film? Submit a separate application for each project.</p></aside><CreatorForm/></section><section className="zc-faq"><p className="zc-eyebrow">Before you apply</p><h2>A few things worth knowing.</h2>{[['Is Zuimi already distributing films?','We are building our MVP and gathering creator applications. The team will discuss readiness, eligibility and next steps with selected applicants.'],['Do I need a finished film?','You can tell us about a film in development, production, post-production or a completed project. Include the current stage so we can understand the right timing.'],['What will I earn, and do I need to be exclusive?','Revenue shares, rights, release windows and any exclusivity are discussed and agreed separately. This application does not lock you into terms.'],['What happens to my information?','Zuimi stores your application for admin review and follow-up. We also record tracked referral links and limited visit information to understand which campaigns bring creators to Zuimi. First and latest sources may be attached to your application using a 30-day attribution window.']].map(([q,a])=><details key={q}><summary>{q}</summary><p>{a}</p></details>)}</section><footer className="zc-footer"><Image src="/zuimi-logo.svg" width={105} height={30} alt="Zuimi"/><p>African stories. Told with depth. Shared with the world.</p><a href="/">Explore Zuimi <ArrowUpRight size={14}/></a></footer></main>;}
+import type { Metadata } from "next";
+import Image from "next/image";
+import {
+  ArrowDown,
+  ArrowUpRight,
+  ChartNoAxesCombined,
+  Clapperboard,
+  Globe2,
+  Ticket,
+} from "lucide-react";
+import CreatorForm from "@/features/coordination/CreatorForm";
+import "./creators.css";
+export const metadata: Metadata = {
+  title: "Bring your film to Zuimi · For African storytellers",
+  description:
+    "Apply to the Zuimi creator pipeline. Africa-first film distribution, transactional pay-per-view and a clearer connection between filmmakers and audiences.",
+};
+export default function CreatorPage() {
+  return (
+    <main className="zuimi-creators">
+      <nav className="zc-nav">
+        <a href="/" aria-label="Zuimi home">
+          <Image
+            src="/zuimi-logo.svg"
+            width={129}
+            height={36}
+            alt="Zuimi"
+            priority
+          />
+        </a>
+        <div>
+          <a href="#why">Why Zuimi</a>
+          <a href="#apply" className="zc-cta">
+            Bring your film <ArrowUpRight size={15} />
+          </a>
+        </div>
+      </nav>
+      <section className="zc-hero">
+        <div className="zc-hero-image" />
+        <div className="zc-hero-content">
+          <p className="zc-eyebrow">
+            <span /> A new chapter for African cinema
+          </p>
+          <h1>
+            Your story deserves
+            <br />
+            more than a <em>screening.</em>
+            <br />
+            <span>An audience.</span>
+          </h1>
+          <p>
+            You’ve done the hard work of bringing a story to life. We’re
+            building Zuimi to help African films find their audience — and give
+            the people behind them a clearer path to distribution.
+          </p>
+          <div className="zc-actions">
+            <a className="zc-cta" href="#apply">
+              Join our creator pipeline <ArrowUpRight size={17} />
+            </a>
+            <a href="#why" className="zc-secondary">
+              Discover the vision <ArrowDown size={15} />
+            </a>
+          </div>
+          <p className="zc-small">
+            Africa-first. Creator-minded. Built for the stories that stay with
+            us.
+          </p>
+        </div>
+        <div className="zc-hero-caption">
+          <Clapperboard size={18} />
+          <span>
+            Our stories.
+            <br />
+            <strong>On our terms.</strong>
+          </span>
+        </div>
+      </section>
+      <section className="zc-intro" id="why">
+        <p className="zc-eyebrow">The story after the final cut</p>
+        <div className="zc-split">
+          <h2>
+            Making a film is hard.
+            <br />
+            <span>
+              Getting it seen shouldn’t
+              <br />
+              be the end of the story.
+            </span>
+          </h2>
+          <div>
+            <p>
+              Across Africa, powerful films can struggle to reach the audiences
+              who would love them. Distribution is fragmented, visibility is
+              limited, and creators are often left with too little insight into
+              what happens next.
+            </p>
+            <p>
+              Zuimi is building an Africa-first film-distribution platform,
+              starting with Nigeria. Our transactional pay-per-view model lets
+              viewers pay for the individual films they choose, without a
+              subscription.
+            </p>
+          </div>
+        </div>
+        <div className="zc-benefits">
+          {[
+            {
+              icon: Globe2,
+              n: "01",
+              title: "Rooted here. Reaching further.",
+              text: "A home for African cinema, with local stories and the ambition to connect them with audiences beyond borders.",
+            },
+            {
+              icon: Ticket,
+              n: "02",
+              title: "Every film has its moment.",
+              text: "Pay-per-view puts the individual film at the centre. We’re building a direct path from discovery to a paid viewing.",
+            },
+            {
+              icon: ChartNoAxesCombined,
+              n: "03",
+              title: "A clearer view of your film.",
+              text: "Our product direction prioritises transparent revenue reporting and audience insight, so creators can understand how their work performs.",
+            },
+          ].map((v) => (
+            <article key={v.n}>
+              <div>
+                <v.icon size={23} />
+                <span>{v.n}</span>
+              </div>
+              <h3>{v.title}</h3>
+              <p>{v.text}</p>
+            </article>
+          ))}
+        </div>
+      </section>
+      <section className="zc-process">
+        <div>
+          <p className="zc-eyebrow">Build the next chapter with us</p>
+          <h2>
+            For the filmmakers
+            <br />
+            who keep <em>going.</em>
+          </h2>
+          <p>
+            Independent directors. Producers. Production companies. Emerging
+            storytellers. If you own or represent distribution rights to an
+            African film, we’d like to hear from you.
+          </p>
+        </div>
+        <ol>
+          {[
+            [
+              "Tell us about your work",
+              "Share your background, your film and where it is in production. No film upload is needed to apply.",
+            ],
+            [
+              "We review and connect",
+              "Our team reviews your application and reaches out using your contact details to explore fit and next steps.",
+            ],
+            [
+              "Agree the next steps together",
+              "Rights, distribution terms, release timing and commercial arrangements are discussed separately before any film goes live.",
+            ],
+          ].map(([title, text], i) => (
+            <li key={title}>
+              <span>0{i + 1}</span>
+              <div>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+      <section className="zc-apply" id="apply">
+        <aside>
+          <p className="zc-eyebrow">Creator applications</p>
+          <h2>
+            Let’s start
+            <br />
+            with <span>your story.</span>
+          </h2>
+          <p>
+            Tell us who you are and what you’re making. We’re onboarding
+            interest as we build the MVP — an application is the beginning of a
+            conversation, not a promise of selection or a live distribution
+            service.
+          </p>
+          <div className="zc-callout">
+            <Clapperboard size={23} />
+            <p>
+              Your film remains yours. Submitting this form does not transfer
+              rights or create a distribution agreement.
+            </p>
+          </div>
+          <p className="zc-small">
+            Have more than one film? Submit a separate application for each
+            project.
+          </p>
+        </aside>
+        <CreatorForm />
+      </section>
+      <section className="zc-faq">
+        <p className="zc-eyebrow">Before you apply</p>
+        <h2>A few things worth knowing.</h2>
+        {[
+          [
+            "Is Zuimi already distributing films?",
+            "We are building our MVP and gathering creator applications. The team will discuss readiness, eligibility and next steps with selected applicants.",
+          ],
+          [
+            "Do I need a finished film?",
+            "You can tell us about a film in development, production, post-production or a completed project. Include the current stage so we can understand the right timing.",
+          ],
+          [
+            "What will I earn, and do I need to be exclusive?",
+            "Revenue shares, rights, release windows and any exclusivity are discussed and agreed separately. This application does not lock you into terms.",
+          ],
+          [
+            "What happens to my information?",
+            "Zuimi stores your application for admin review and follow-up. We also record tracked referral links and limited visit information to understand which campaigns bring creators to Zuimi. First and latest sources may be attached to your application using a 30-day attribution window.",
+          ],
+        ].map(([q, a]) => (
+          <details key={q}>
+            <summary>{q}</summary>
+            <p>{a}</p>
+          </details>
+        ))}
+      </section>
+      <footer className="zc-footer">
+        <Image src="/zuimi-logo.svg" width={105} height={30} alt="Zuimi" />
+        <p>African stories. Told with depth. Shared with the world.</p>
+        <a href="/">
+          Explore Zuimi <ArrowUpRight size={14} />
+        </a>
+      </footer>
+    </main>
+  );
+}
