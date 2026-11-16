@@ -1,7 +1,7 @@
 'use client';
 import {useState} from 'react';
 import {api,Application,label} from './data';
-import {Panel,Pill,Stats} from './Board';
+import {Panel,Pill,Stats} from './ui';
 export default function CreatorPipeline({applications,onRefresh}:{applications:Application[];onRefresh:()=>Promise<void>}){
  const [search,setSearch]=useState('');const [status,setStatus]=useState('all');
  const filtered=applications.filter(a=>(status==='all'||a.status===status)&&`${a.name} ${a.email} ${a.film_title} ${a.company} ${a.latest_source.source}`.toLowerCase().includes(search.toLowerCase()));

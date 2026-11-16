@@ -2,7 +2,7 @@
 import { useState } from 'react';
 import { ChevronLeft, ChevronRight, Copy, Plus } from 'lucide-react';
 import { contentTemplates, dateLabel, Draft, emptyItem, Item, label, todayLagos, weekOf } from './data';
-import { Panel, Pill, Stats } from './Board';
+import { Panel, Pill, Stats } from './ui';
 export default function CEOStudio({items,onEdit,onCreate}: {items:Item[];onEdit:(i:Item)=>void;onCreate:(i:Draft)=>void}) {
  const [view,setView]=useState('calendar');const [week,setWeek]=useState(weekOf(todayLagos()));const [notice,setNotice]=useState('');
  const posts=items.filter(i=>i.kind==='post');const templates=items.filter(i=>i.kind==='template');const ideas=items.filter(i=>i.kind==='idea');

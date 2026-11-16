@@ -2,7 +2,7 @@
 import { FormEvent, useState } from 'react';
 import { Copy, ExternalLink, Plus } from 'lucide-react';
 import { api, Campaign } from './data';
-import { Panel, Stats } from './Board';
+import { Panel, Stats } from './ui';
 export default function Campaigns({campaigns,onRefresh}:{campaigns:Campaign[];onRefresh:()=>Promise<void>}) {
  const [busy,setBusy]=useState(false);const [message,setMessage]=useState('');const [error,setError]=useState('');const [created,setCreated]=useState('');
  const sum=(key:'clicks'|'unique_visitors'|'applications'|'converting_visitors')=>campaigns.reduce((a,c)=>a+c[key],0);
