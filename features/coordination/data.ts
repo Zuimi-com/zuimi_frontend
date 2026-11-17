@@ -118,7 +118,11 @@ export async function api<T>(
   });
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    if (response.status === 401 || response.status === 403)
+    if (response.status === 404 && ["work/", "applications/", "campaigns/analytics/"].includes(path))
+      throw new Error("The coordination backend is unavailable. Its update and database migration may still need to be applied.");
+    if (response.status >= 500)
+      throw new Error("The workspace is temporarily unavailable. Please retry shortly.");
+    if (response.status === 401)
       throw new Error(
         "Your admin session is unavailable. Sign in again, then reload.",
       );

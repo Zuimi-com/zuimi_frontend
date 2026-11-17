@@ -1,3 +1,4 @@
+import { publicRequestOrigin } from "@/lib/server/request-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { recordVisit } from "@/lib/server/creator-funnel";
 export const dynamic = "force-dynamic";
@@ -9,7 +10,7 @@ export async function GET(request: NextRequest, { params }: Context) {
   } catch {
     /* Creator access remains available during a tracking outage. */
   }
-  return NextResponse.redirect(new URL("/creators/apply/", request.url), {
+  return NextResponse.redirect(new URL("/creators/apply/", publicRequestOrigin(request)), {
     status: 302,
     headers: {
       "Cache-Control": "private, no-store",
@@ -19,7 +20,7 @@ export async function GET(request: NextRequest, { params }: Context) {
   });
 }
 export async function HEAD(request: NextRequest) {
-  return NextResponse.redirect(new URL("/creators/apply/", request.url), {
+  return NextResponse.redirect(new URL("/creators/apply/", publicRequestOrigin(request)), {
     status: 302,
     headers: { "Cache-Control": "private, no-store" },
   });

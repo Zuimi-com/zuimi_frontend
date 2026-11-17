@@ -1,3 +1,4 @@
+import { isSameOriginRequest } from "@/lib/server/request-origin";
 import { NextRequest, NextResponse } from "next/server";
 
 import { clearAdminSession, fetchWithAdminSession } from "@/lib/server/admin-session";
@@ -6,8 +7,7 @@ type RouteContext = { params: Promise<{ path: string[] }> };
 
 async function proxy(request: NextRequest, context: RouteContext) {
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
-    const origin = request.headers.get("origin");
-    if (origin && origin !== request.nextUrl.origin) {
+    if (!isSameOriginRequest(request.headers, true)) {
       return NextResponse.json({ detail: "Invalid request origin." }, { status: 403 });
     }
   }

@@ -1,3 +1,4 @@
+import { publicRequestOrigin } from "@/lib/server/request-origin";
 import { NextRequest, NextResponse } from "next/server";
 import { fetchWithAdminSession } from "@/lib/server/admin-session";
 export async function GET(request: NextRequest) {
@@ -8,7 +9,7 @@ export async function GET(request: NextRequest) {
       response.ok && data.user?.is_staff === true
         ? "/eco/boarddash/55019/"
         : "/admin-login",
-      request.url,
+      publicRequestOrigin(request),
     ),
   );
 }

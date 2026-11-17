@@ -1,4 +1,5 @@
 import "server-only";
+import { isSameOriginRequest } from "./request-origin";
 import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { getApiBaseUrl } from "@/lib/get-api-base-url";
@@ -11,7 +12,7 @@ const options = {
 };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function sameOrigin(request: NextRequest) {
-  return request.headers.get("origin") === request.nextUrl.origin;
+  return isSameOriginRequest(request.headers);
 }
 export function publicHeaders(request: NextRequest) {
   const forwarded = request.headers
