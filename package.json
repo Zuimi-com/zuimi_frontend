@@ -7,6 +7,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "test:tutorials": "tsc -p tsconfig.tutorial-tests.json && node --test /tmp/zuimi-admin-tutorial-tests/tests/adminTutorials.test.js",
+    "test:admin-session": "node --test tests/admin-session.test.cjs",
     "test:coordination:e2e": "node --test tests/coordination.e2e.cjs",
     "test:coordination": "tsc -p tsconfig.coordination-tests.json && node --test /tmp/zuimi-coordination-tests/tests/coordination.test.js"
   },

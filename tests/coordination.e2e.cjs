@@ -133,7 +133,7 @@ test('coordination page persists all workspace and creator-funnel flows through 
   });
   await checkpoint('expired access refreshes without losing staff access and foreign origins are rejected',async()=>{
    await context.addCookies([{name:'zuimi_admin_access',value:'expired',url:base}]);
-   const refreshed=await api('work/');assert.equal(refreshed.status,200);
+   const refreshed=await Promise.all(['work/','applications/','campaigns/analytics/'].map(path=>api(path)));assert.deepEqual(refreshed.map(r=>r.status),[200,200,200]);
    const foreign=await context.request.post('/api/admin/backend/coordination/work/',{headers:{Origin:'https://evil.example'},data:{title:'Must not save'}});assert.equal(foreign.status(),403);
    const crossSiteApplication=await context.request.post('/api/creators/apply',{headers:{Origin:'https://evil.example'},data:{}});assert.equal(crossSiteApplication.status(),403);
    assert.deepEqual(errors,[]);

@@ -33,30 +33,45 @@ export async function clearAdminSession() {
   LEGACY_CLIENT_COOKIES.forEach((name) => store.delete(name));
 }
 
+type SessionTokens = { access: string; refresh: string };
+// The board loads several endpoints at once. Share rotation of the same refresh
+// token so parallel requests do not blacklist one another's session.
+const refreshes = new Map<string, Promise<SessionTokens | null>>();
+
 async function refreshAdminSession(): Promise<string | null> {
   const store = await cookies();
   const refresh = store.get(REFRESH_COOKIE)?.value;
   if (!refresh) return null;
-
-  const response = await fetch(backendUrl("/token/generate-access-token/"), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ refresh }),
-    cache: "no-store",
-  });
-
-  if (!response.ok) {
+  let operation = refreshes.get(refresh);
+  if (!operation) {
+    operation = (async () => {
+      const response = await fetch(backendUrl("/token/generate-access-token/"), {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ refresh }),
+        cache: "no-store",
+      });
+      if (!response.ok) return null;
+      const tokens = (await response.json()) as { access?: string; refresh?: string };
+      return tokens.access ? { access: tokens.access, refresh: tokens.refresh ?? refresh } : null;
+    })();
+    refreshes.set(refresh, operation);
+    // Allow requests already queued with the old cookie to receive the same
+    // rotated result; expire this short-lived cache without keeping Node alive.
+    const current = operation;
+    const expire = () => { if (refreshes.get(refresh) === current) refreshes.delete(refresh); };
+    operation.then(tokens => {
+      if (!tokens) expire();
+      else setTimeout(expire, 5000).unref();
+    }, expire);
+  }
+  const tokens = await operation;
+  if (!tokens) {
     await clearAdminSession();
     return null;
   }
-
-  const tokens = (await response.json()) as { access?: string; refresh?: string };
-  if (!tokens.access) {
-    await clearAdminSession();
-    return null;
-  }
-
-  await setAdminSession(tokens.access, tokens.refresh ?? refresh);
+  // Each request has a separate cookie store and must set its own response cookies.
+  await setAdminSession(tokens.access, tokens.refresh);
   return tokens.access;
 }
 
