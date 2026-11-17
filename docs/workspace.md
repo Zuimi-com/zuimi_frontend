@@ -34,8 +34,9 @@ No automatic X publishing, outbound applicant emails, creator account provisioni
 ## Validation
 
 - `npx tsc --noEmit`
-- `npm run test:coordination` (three deadline/week/dependency checks)
+- `npm run test:coordination` (nine date, dependency, API and public-host checks)
+- `npm run test:admin-session` (three concurrent refresh/session checks)
 - `npm run test:tutorials` (six existing admin checks)
-- `npm run build` on a host able to fetch the existing Google Fonts dependencies
+- `npm run test:coordination:e2e` against an isolated API/database (eight real-browser checkpoints)
 
-TypeScript and all nine frontend tests passed locally. The normal production build was blocked by Google Fonts network access in this environment. Managed browser preview was unavailable because the launcher injected Vite-specific flags that Next.js rejects. Visual layout, live admin refresh, real-host attribution and cross-device persistence therefore still need deployment acceptance checks. No deployment is claimed by this source change. See the companion API's `docs/coordination-rollout.md` for migration order and the full acceptance procedure.
+The coordination creation/dependency/proxy defects and local Docker deployment are repaired. Browser acceptance now covers all board sections, campaign tracking, creator submission/review and session refresh. See [the reproducible setup and verification report](coordination-verification.md) for exact coverage, build evidence and deployment limits. Existing data was preserved; all acceptance records were created in a disposable QA database.
