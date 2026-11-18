@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 import { NewsletterBroadcast } from "@/features/dashboard/service/newsletter";
 
@@ -114,6 +115,15 @@ export default function NewsletterHistory({
                     className="px-6 py-4 text-sm font-medium text-gray-900"
                   >
                     {row.subject}
+                    {row.status === "DRAFT" && !isPlayback && (
+                      <Link
+                        href={`/admin/compose-letter?draft=${encodeURIComponent(row.id)}`}
+                        className="ml-3 font-medium text-blue-700 hover:underline"
+                        aria-label={`Edit draft: ${row.subject}`}
+                      >
+                        Edit draft
+                      </Link>
+                    )}
                   </td>
                   <td
                     data-tutorial={index === 0 ? "newsletter-history-status" : undefined}

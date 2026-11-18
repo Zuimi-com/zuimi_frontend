@@ -9,12 +9,14 @@ import { Loader2, SaveAll, Send, Users, X } from "lucide-react";
 import { useState } from "react";
 
 export function NewsletterSendCard({
+  initialDraftId,
   subject,
   body,
   subscribersCount,
   senderName,
   senderEmail,
 }: {
+  initialDraftId?: string;
   subject: string;
   body: string;
   subscribersCount: number;
@@ -24,7 +26,8 @@ export function NewsletterSendCard({
   const { isPlayback, demoState } = useAdminTutorial();
   const saveDraft = useSaveNewsletterDraft();
   const sendNewsletter = useSendNewsletter();
-  const [draftId, setDraftId] = useState<string>();
+  const [draftId, setDraftId] = useState(initialDraftId);
+  const [submitted, setSubmitted] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [message, setMessage] = useState("");
 
@@ -64,6 +67,7 @@ export function NewsletterSendCard({
       if (!id) return;
       const result = await sendNewsletter.mutateAsync(id);
       setConfirmOpen(false);
+      setSubmitted(true);
       setMessage(
         result.status === "queued"
           ? "Newsletter queued for delivery."
@@ -122,7 +126,7 @@ export function NewsletterSendCard({
           type="button"
           data-tutorial="newsletter-save-draft"
           onClick={handleSave}
-          disabled={busy || isPlayback || !valid}
+          disabled={busy || submitted || isPlayback || !valid}
           className="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 px-4 py-2 text-xs font-medium text-gray-700 disabled:opacity-50"
         >
           {saveDraft.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <SaveAll className="h-4 w-4" />}
@@ -132,7 +136,7 @@ export function NewsletterSendCard({
           type="button"
           data-tutorial="newsletter-send"
           onClick={() => !isPlayback && setConfirmOpen(true)}
-          disabled={busy || isPlayback || !valid}
+          disabled={busy || submitted || isPlayback || !valid}
           className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#1684EF] px-4 py-2 text-xs font-semibold text-white disabled:opacity-50"
         >
           <Send className="h-4 w-4" />

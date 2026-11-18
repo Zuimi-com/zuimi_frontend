@@ -63,6 +63,18 @@ export const useGetBroadcasts = (enabled = true) =>
     refetchInterval: enabled ? 15000 : false,
   });
 
+export const useGetBroadcast = (id: string | null) =>
+  useQuery({
+    queryKey: ["newsletter", "broadcasts", id],
+    enabled: Boolean(id),
+    queryFn: async () => {
+      const response = await axiosInstance.get<NewsletterBroadcast>(
+        `/newsletter/broadcasts/${encodeURIComponent(id!)}/`,
+      );
+      return response.data;
+    },
+  });
+
 export const useGetNewsletterSummary = (enabled = true) =>
   useQuery({
     queryKey: ["newsletter", "summary"],

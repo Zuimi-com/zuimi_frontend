@@ -12,10 +12,12 @@ import EditorToolbar from "./admin/editor-toolbar";
 
 export default function DocumentEditor({
   subject,
+  initialContent = "",
   onSubjectChange,
   onContentChange,
 }: {
   subject: string;
+  initialContent?: string;
   onSubjectChange: (subject: string) => void;
   onContentChange: (content: string) => void;
 }) {
@@ -43,10 +45,9 @@ export default function DocumentEditor({
         },
       }),
     ],
-    content: "",
+    content: initialContent,
     onCreate({ editor: createdEditor }) {
       setEditor(createdEditor);
-      onContentChange(createdEditor.getHTML());
     },
     onUpdate({ editor: updatedEditor }) {
       onContentChange(updatedEditor.getHTML());
