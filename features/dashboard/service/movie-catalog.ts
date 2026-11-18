@@ -31,6 +31,7 @@ export type CatalogProducer = {
   id: string;
   full_name: string;
   email: string | null;
+  email_verified_at?: string | null;
   phone_number: string | null;
   is_active: boolean;
   status: "active" | "inactive";
@@ -470,3 +471,10 @@ export const useActivateProducer = () => {
     },
   });
 };
+
+export const useSendProducerVerification = () =>
+  useMutation({
+    mutationFn: async (id: string) => {
+      await axiosInstance.post(`${PRODUCERS_ENDPOINT}${id}/send-verification/`);
+    },
+  });

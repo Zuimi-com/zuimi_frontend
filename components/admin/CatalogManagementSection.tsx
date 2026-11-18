@@ -9,6 +9,7 @@ import {
   useCreateDirector,
   useCreateGenre,
   useCreateProducer,
+  useSendProducerVerification,
   useDeactivateActor,
   useDeactivateDirector,
   useDeactivateGenre,
@@ -42,6 +43,7 @@ type EntityRow = {
   primary: string;
   secondary: string | null;
   imageUrl?: string | null;
+  emailVerified?: boolean;
   status: "active" | "inactive";
   updatedAt: string;
 };
@@ -64,6 +66,7 @@ type EntitySectionProps = {
   onUpdate: (id: string, values: FormValues) => Promise<MutationResult>;
   onDeactivate: (id: string) => Promise<MutationResult>;
   onActivate: (id: string) => Promise<MutationResult>;
+  onSendVerification?: (id: string) => Promise<void>;
 };
 
 export type CatalogSectionMode = "all" | "directors" | "actors" | "genres" | "producers";
@@ -181,6 +184,7 @@ function EntitySection({
   onUpdate,
   onDeactivate,
   onActivate,
+  onSendVerification,
 }: EntitySectionProps) {
   const fieldsId = useId();
   const [adding, setAdding] = useState(false);
@@ -654,6 +658,27 @@ function EntitySection({
                               </span>
                             )}
                           </p>
+                          {isProducer && row.secondary && (
+                            row.emailVerified ? (
+                              <span className="text-xs font-medium text-emerald-700">Email verified</span>
+                            ) : (
+                              <button
+                                type="button"
+                                className="mt-1 text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+                                disabled={isPlayback || isBusy}
+                                onClick={async () => {
+                                  try {
+                                    await onSendVerification?.(row.id);
+                                    toast.success("Verification email sent");
+                                  } catch (error) {
+                                    toast.error(getErrorMessage(error));
+                                  }
+                                }}
+                              >
+                                Send verification email
+                              </button>
+                            )
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -815,6 +840,7 @@ const mapProducerRows = (rows: CatalogProducer[] | undefined): EntityRow[] => {
     id: row.id,
     primary: row.full_name,
     secondary: row.email,
+    emailVerified: Boolean(row.email_verified_at),
     status: row.status,
     updatedAt: row.updated_at,
   }));
@@ -845,6 +871,7 @@ export default function CatalogManagementSection({
   const activateGenre = useActivateGenre();
 
   const createProducer = useCreateProducer();
+  const sendVerification = useSendProducerVerification();
   const updateProducer = useUpdateProducer();
   const deactivateProducer = useDeactivateProducer();
   const activateProducer = useActivateProducer();
@@ -897,7 +924,8 @@ export default function CatalogManagementSection({
             createProducer.isPending ||
             updateProducer.isPending ||
             deactivateProducer.isPending ||
-            activateProducer.isPending
+            activateProducer.isPending ||
+            sendVerification.isPending
           }
           onCreate={(values) =>
             createProducer.mutateAsync({
@@ -916,6 +944,7 @@ export default function CatalogManagementSection({
           }
           onDeactivate={(id) => deactivateProducer.mutateAsync(id)}
           onActivate={(id) => activateProducer.mutateAsync(id)}
+          onSendVerification={(id) => sendVerification.mutateAsync(id)}
         />
       )}
 
