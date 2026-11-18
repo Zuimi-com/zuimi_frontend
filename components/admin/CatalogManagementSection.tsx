@@ -27,7 +27,7 @@ import {
   useUpdateProducer,
 } from "@/features/dashboard/service/movie-catalog";
 import { AlertCircle, BriefcaseBusiness, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
@@ -182,12 +182,15 @@ function EntitySection({
   onDeactivate,
   onActivate,
 }: EntitySectionProps) {
+  const fieldsId = useId();
+  const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormValues>({
     primary: "",
     secondary: "",
     imageFile: null,
   });
+  const [imageError, setImageError] = useState("");
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const [deactivateConfirm, setDeactivateConfirm] = useState<string | null>(null);
   const [activateConfirm, setActivateConfirm] = useState<string | null>(null);
@@ -218,6 +221,8 @@ function EntitySection({
   const inactiveCount = displayRows.length - activeCount;
 
   const resetForm = () => {
+    setAdding(false);
+    setImageError("");
     setEditingId(null);
     setForm({ primary: "", secondary: "", imageFile: null });
   };
@@ -309,6 +314,10 @@ function EntitySection({
     }
   };
 
+  const isProducer = title === "Producers";
+  const secondaryLimit = title === "Directors" ? 2000 : title === "Genres" ? 500 : undefined;
+  const formId = `${fieldsId}-form`;
+
   const getEntityIcon = () => {
     if (title === "Directors") return <Crown className="h-5 w-5" />;
     if (title === "Actors") return <Film className="h-5 w-5" />;
@@ -317,59 +326,9 @@ function EntitySection({
     return <Plus className="h-5 w-5" />;
   };
 
-  return (
-    <section
-      data-tutorial={`catalog-${tutorialSlug}-overview`}
-      className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60"
-    >
-      {/* Header */}
-      <div className="bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
-              {getEntityIcon()}
-            </div>
-            <div>
-              <h2 className="text-xl font-semibold tracking-tight text-slate-900">
-                {title}
-              </h2>
-              <p className="mt-1 text-sm text-slate-600">{description}</p>
-            </div>
-          </div>
-
-          <div className="flex flex-col items-end gap-3">
-            <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
-              <div className="flex items-center gap-1">
-                <div className="h-2 w-2 rounded-full bg-emerald-500" />
-                <span className="font-semibold text-slate-900">{activeCount}</span>
-                <span className="text-slate-600">active</span>
-              </div>
-              {inactiveCount > 0 && (
-                <>
-                  <div className="h-3 border-l border-slate-300" />
-                  <div className="flex items-center gap-1">
-                    <div className="h-2 w-2 rounded-full bg-amber-500" />
-                    <span className="font-semibold text-slate-900">{inactiveCount}</span>
-                    <span className="text-slate-600">inactive</span>
-                  </div>
-                </>
-              )}
-            </div>
-            <button
-              type="button"
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="text-xs font-medium text-blue-600 hover:text-blue-700"
-            >
-              {isExpanded ? "Hide" : "Show"} details
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {isExpanded && (
-        <>
-          {/* Form Section */}
+  const entryForm = (
           <form
+            id={formId}
             onSubmit={handleSubmit}
             className="border-y border-slate-100 bg-slate-50/70 px-6 py-5"
           >
@@ -385,10 +344,13 @@ function EntitySection({
                 data-tutorial={`catalog-${tutorialSlug}-primary`}
                 className={supportsImage ? "md:col-span-3" : "md:col-span-4"}
               >
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                <label htmlFor={`${fieldsId}-name`} className="mb-2 block text-sm font-semibold text-slate-700">
                   {primaryLabel}
                 </label>
                 <input
+                  id={`${fieldsId}-name`}
+                  autoFocus
+                  required
                   value={form.primary}
                   disabled={isPlayback}
                   onChange={(event) =>
@@ -414,10 +376,14 @@ function EntitySection({
                 data-tutorial={`catalog-${tutorialSlug}-secondary`}
                 className={supportsImage ? "md:col-span-4" : "md:col-span-5"}
               >
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
+                <label htmlFor={`${fieldsId}-details`} className="mb-2 block text-sm font-semibold text-slate-700">
                   {secondaryLabel}
                 </label>
                 <input
+                  id={`${fieldsId}-details`}
+                  type={isProducer ? "email" : "text"}
+                  required={isProducer}
+                  maxLength={secondaryLimit}
                   value={form.secondary}
                   disabled={isPlayback}
                   onChange={(event) =>
@@ -427,7 +393,7 @@ function EntitySection({
                     }))
                   }
                   className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  placeholder={`Optional ${secondaryLabel.toLowerCase()}`}
+                  placeholder={isProducer ? "producer@example.com" : `Optional ${secondaryLabel.toLowerCase()}`}
                 />
               </div>
 
@@ -436,16 +402,27 @@ function EntitySection({
                   data-tutorial={`catalog-${tutorialSlug}-image`}
                   className="md:col-span-3"
                 >
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">
+                  <label htmlFor={`${fieldsId}-image`} className="mb-2 block text-sm font-semibold text-slate-700">
                     Profile Image
                   </label>
                   <div className="relative">
                     <input
+                      id={`${fieldsId}-image`}
                       type="file"
                       disabled={isPlayback}
                       accept="image/png,image/jpeg,image/webp"
                       onChange={(event) => {
                         const selected = event.target.files?.[0] || null;
+                        setImageError("");
+                        if (selected && (
+                          !["image/png", "image/jpeg", "image/webp"].includes(selected.type)
+                          || selected.size > 5 * 1024 * 1024
+                        )) {
+                          event.currentTarget.value = "";
+                          setImageError("Choose a JPG, PNG, or WEBP image up to 5 MB.");
+                          setForm((current) => ({ ...current, imageFile: null }));
+                          return;
+                        }
                         setForm((current) => ({
                           ...current,
                           imageFile: selected,
@@ -458,6 +435,7 @@ function EntitySection({
                     JPG, PNG, or WEBP • Max 5MB
                   </p>
 
+                  {imageError && <p role="alert" className="mt-2 text-xs text-red-700">{imageError}</p>}
                   {localImagePreview && (
                     <div className="mt-3 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
                       <img
@@ -494,11 +472,12 @@ function EntitySection({
                   ) : (
                     <Plus className="h-4 w-4" />
                   )}
-                  {editingId ? "Update" : "Add"}
+                  {editingId ? "Update" : "Create entry"}
                 </button>
 
-                {editingId && (
+                {(editingId || adding) && (
                   <button
+                    aria-label="Cancel editing"
                     data-tutorial={`catalog-${tutorialSlug}-cancel`}
                     type="button"
                     onClick={() => {
@@ -514,6 +493,73 @@ function EntitySection({
             </div>
           </form>
 
+  );
+
+  return (
+    <section
+      data-tutorial={`catalog-${tutorialSlug}-overview`}
+      className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-lg shadow-slate-200/60"
+    >
+      {/* Header */}
+      <div className="bg-linear-to-r from-slate-50 via-white to-blue-50 px-6 py-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-start gap-3">
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-blue-100">
+              {getEntityIcon()}
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-slate-900">
+                {title}
+              </h2>
+              <p className="mt-1 text-sm text-slate-600">{description}</p>
+            </div>
+          </div>
+
+          <div className="flex flex-col items-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setIsExpanded(true);
+                setAdding(true);
+              }}
+              disabled={isPlayback || isBusy}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+              Add New Entry
+            </button>
+            <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
+              <div className="flex items-center gap-1">
+                <div className="h-2 w-2 rounded-full bg-emerald-500" />
+                <span className="font-semibold text-slate-900">{activeCount}</span>
+                <span className="text-slate-600">active</span>
+              </div>
+              {inactiveCount > 0 && (
+                <>
+                  <div className="h-3 border-l border-slate-300" />
+                  <div className="flex items-center gap-1">
+                    <div className="h-2 w-2 rounded-full bg-amber-500" />
+                    <span className="font-semibold text-slate-900">{inactiveCount}</span>
+                    <span className="text-slate-600">inactive</span>
+                  </div>
+                </>
+              )}
+            </div>
+            <button
+              type="button"
+              onClick={() => setIsExpanded(!isExpanded)}
+              className="text-xs font-medium text-blue-600 hover:text-blue-700"
+            >
+              {isExpanded ? "Hide" : "Show"} details
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {isExpanded && (
+        <>
+          {!editingId && (adding || isPlayback) && entryForm}
           {/* Data Section */}
           <div className="px-6 py-6">
             {isLoading && !isPlayback ? (
@@ -542,7 +588,7 @@ function EntitySection({
                   No {title.toLowerCase()} yet
                 </p>
                 <p className="text-xs text-slate-500">
-                  Add your first entry using the form above to get started.
+                  Select Add New Entry to create the first record.
                 </p>
               </div>
             ) : (
@@ -574,8 +620,8 @@ function EntitySection({
                   </thead>
                   <tbody>
                     {displayRows.map((row) => (
+                      <Fragment key={row.id}>
                       <tr
-                        key={row.id}
                         className="border-b border-slate-100 transition hover:bg-blue-50/30 last:border-0"
                       >
                         <td className="px-4 py-3">
@@ -620,7 +666,7 @@ function EntitySection({
                             <span
                               className={`h-2 w-2 rounded-full ${
                                 row.status === "active"
-                                  ? "bg-emerald-500"
+                                  ? `bg-emerald-500 ${isProducer ? "motion-safe:animate-pulse" : ""}`
                                   : "bg-amber-500"
                               }`}
                             />
@@ -637,7 +683,10 @@ function EntitySection({
                             <button
                               data-tutorial={`catalog-${tutorialSlug}-edit`}
                               type="button"
+                              aria-label={`Edit ${row.primary}`}
                               onClick={() => {
+                                setAdding(false);
+                                setImageError("");
                                 setEditingId(row.id);
                                 setForm({
                                   primary: row.primary,
@@ -686,6 +735,12 @@ function EntitySection({
                           </div>
                         </td>
                       </tr>
+                      {editingId === row.id && (
+                        <tr>
+                          <td colSpan={supportsImage ? 6 : 5}>{entryForm}</td>
+                        </tr>
+                      )}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
@@ -732,7 +787,7 @@ const mapProfileRows = (rows: CatalogProfile[] | undefined): EntityRow[] => {
     primary: row.full_name,
     secondary: row.bio,
     imageUrl: row.profile_image,
-    status: row.status,
+    status: row.is_active ? "active" : "inactive",
     updatedAt: row.updated_at,
   }));
 };
@@ -847,7 +902,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createProducer.mutateAsync({
               full_name: values.primary,
-              email: values.secondary || undefined,
+              email: values.secondary,
             })
           }
           onUpdate={(id, values) =>
@@ -855,7 +910,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                email: values.secondary || undefined,
+                email: values.secondary,
               },
             })
           }
@@ -879,7 +934,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createDirector.mutateAsync({
               full_name: values.primary,
-              bio: values.secondary || undefined,
+              bio: values.secondary,
               profile_image_file: values.imageFile || undefined,
             })
           }
@@ -888,7 +943,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                bio: values.secondary || undefined,
+                bio: values.secondary,
                 profile_image_file: values.imageFile || undefined,
               },
             })
@@ -911,7 +966,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createActor.mutateAsync({
               full_name: values.primary,
-              bio: values.secondary || undefined,
+              bio: values.secondary,
               profile_image_file: values.imageFile || undefined,
             })
           }
@@ -920,7 +975,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                bio: values.secondary || undefined,
+                bio: values.secondary,
                 profile_image_file: values.imageFile || undefined,
               },
             })
@@ -942,7 +997,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createGenre.mutateAsync({
               name: values.primary,
-              description: values.secondary || undefined,
+              description: values.secondary,
             })
           }
           onUpdate={(id, values) =>
@@ -950,7 +1005,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 name: values.primary,
-                description: values.secondary || undefined,
+                description: values.secondary,
               },
             })
           }

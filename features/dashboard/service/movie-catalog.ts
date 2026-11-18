@@ -64,7 +64,7 @@ const buildProfileFormData = (data: UpsertProfilePayload) => {
   const formData = new FormData();
   formData.append("full_name", data.full_name.trim());
 
-  if (data.bio?.trim()) {
+  if (data.bio !== undefined) {
     formData.append("bio", data.bio.trim());
   }
 
