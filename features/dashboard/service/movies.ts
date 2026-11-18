@@ -71,6 +71,7 @@ export type MovieAsset = {
 };
 
 export type CreateMoviePayload = {
+  draft_id?: string;
   title: string;
   description?: string;
   price: string;
@@ -118,6 +119,7 @@ export const useCreateMovie = () => {
       formData.append("producer", payload.producer);
 
       const optionalTextFields: Array<[string, string | undefined]> = [
+        ["draft_id", payload.draft_id],
         ["description", payload.description],
         ["genre", payload.genre],
         ["director", payload.director],
@@ -142,6 +144,7 @@ export const useCreateMovie = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movies"] });
+      queryClient.invalidateQueries({ queryKey: ["movie-drafts"] });
     },
   });
 };
@@ -259,5 +262,28 @@ export const useUnpublishMovieAsset = () => {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["movie-assets"] });
     },
+  });
+};
+
+export type MovieDraft<T> = { id: string; metadata: T; updated_at: string };
+
+export const useGetMovieDrafts = <T,>(enabled: boolean) =>
+  useQuery({
+    queryKey: ["movie-drafts"],
+    enabled,
+    queryFn: async () => (await axiosInstance.get<MovieDraft<T>[]>("/movies/admin/drafts/")).data,
+  });
+
+export const useSaveMovieDraft = <T,>() => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, metadata }: { id?: string; metadata: T }) => {
+      const path = "/movies/admin/drafts/";
+      const response = id
+        ? await axiosInstance.put<MovieDraft<T>>(`${path}${id}/`, { metadata })
+        : await axiosInstance.post<MovieDraft<T>>(path, { metadata });
+      return response.data;
+    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["movie-drafts"] }),
   });
 };

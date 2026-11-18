@@ -9,6 +9,7 @@ import {
   useCreateDirector,
   useCreateGenre,
   useCreateProducer,
+  useSendProducerVerification,
   useDeactivateActor,
   useDeactivateDirector,
   useDeactivateGenre,
@@ -27,7 +28,7 @@ import {
   useUpdateProducer,
 } from "@/features/dashboard/service/movie-catalog";
 import { AlertCircle, BriefcaseBusiness, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import toast from "react-hot-toast";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
@@ -42,6 +43,7 @@ type EntityRow = {
   primary: string;
   secondary: string | null;
   imageUrl?: string | null;
+  emailVerified?: boolean;
   status: "active" | "inactive";
   updatedAt: string;
 };
@@ -64,6 +66,7 @@ type EntitySectionProps = {
   onUpdate: (id: string, values: FormValues) => Promise<MutationResult>;
   onDeactivate: (id: string) => Promise<MutationResult>;
   onActivate: (id: string) => Promise<MutationResult>;
+  onSendVerification?: (id: string) => Promise<void>;
 };
 
 export type CatalogSectionMode = "all" | "directors" | "actors" | "genres" | "producers";
@@ -181,13 +184,17 @@ function EntitySection({
   onUpdate,
   onDeactivate,
   onActivate,
+  onSendVerification,
 }: EntitySectionProps) {
+  const fieldsId = useId();
+  const [adding, setAdding] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [form, setForm] = useState<FormValues>({
     primary: "",
     secondary: "",
     imageFile: null,
   });
+  const [imageError, setImageError] = useState("");
   const [localImagePreview, setLocalImagePreview] = useState<string | null>(null);
   const [deactivateConfirm, setDeactivateConfirm] = useState<string | null>(null);
   const [activateConfirm, setActivateConfirm] = useState<string | null>(null);
@@ -218,6 +225,8 @@ function EntitySection({
   const inactiveCount = displayRows.length - activeCount;
 
   const resetForm = () => {
+    setAdding(false);
+    setImageError("");
     setEditingId(null);
     setForm({ primary: "", secondary: "", imageFile: null });
   };
@@ -309,6 +318,10 @@ function EntitySection({
     }
   };
 
+  const isProducer = title === "Producers";
+  const secondaryLimit = title === "Directors" ? 2000 : title === "Genres" ? 500 : undefined;
+  const formId = `${fieldsId}-form`;
+
   const getEntityIcon = () => {
     if (title === "Directors") return <Crown className="h-5 w-5" />;
     if (title === "Actors") return <Film className="h-5 w-5" />;
@@ -316,6 +329,206 @@ function EntitySection({
     if (title === "Genres") return <Music className="h-5 w-5" />;
     return <Plus className="h-5 w-5" />;
   };
+
+  const cropImage = async () => {
+    const original = form.imageFile;
+    if (!original) return;
+    try {
+      const bitmap = await createImageBitmap(original);
+      try {
+        const edge = Math.min(bitmap.width, bitmap.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = Math.min(edge, 1024);
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Image editor unavailable");
+        context.drawImage(
+          bitmap, (bitmap.width - edge) / 2, (bitmap.height - edge) / 2,
+          edge, edge, 0, 0, canvas.width, canvas.height,
+        );
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!blob || blob.size > 5 * 1024 * 1024) throw new Error("Cropped image is too large");
+        const cropped = new File([blob], "profile-crop.png", { type: "image/png" });
+        setForm((current) => current.imageFile === original ? { ...current, imageFile: cropped } : current);
+        setImageError("");
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      setImageError("Could not crop this image. You can upload the original or choose another image.");
+    }
+  };
+
+  const entryForm = (
+          <form
+            id={formId}
+            onSubmit={handleSubmit}
+            className="border-y border-slate-100 bg-slate-50/70 px-6 py-5"
+          >
+            <div className="mb-4 flex items-center gap-2">
+              <Plus className="h-4 w-4 text-slate-600" />
+              <span className="text-sm font-semibold text-slate-700">
+                {editingId ? "Edit entry" : "Add new entry"}
+              </span>
+            </div>
+
+            <div className="grid gap-4 md:grid-cols-12">
+              <div
+                data-tutorial={`catalog-${tutorialSlug}-primary`}
+                className={supportsImage ? "md:col-span-3" : "md:col-span-4"}
+              >
+                <label htmlFor={`${fieldsId}-name`} className="mb-2 block text-sm font-semibold text-slate-700">
+                  {primaryLabel}
+                </label>
+                <input
+                  id={`${fieldsId}-name`}
+                  autoFocus
+                  required
+                  value={form.primary}
+                  disabled={isPlayback}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      primary: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder={`e.g., ${
+                    title === "Directors"
+                      ? "Christopher Nolan"
+                      : title === "Actors"
+                        ? "Leonardo DiCaprio"
+                        : title === "Producers"
+                          ? "Ava DuVernay"
+                        : "Action"
+                  }`}
+                />
+              </div>
+
+              <div
+                data-tutorial={`catalog-${tutorialSlug}-secondary`}
+                className={supportsImage ? "md:col-span-4" : "md:col-span-5"}
+              >
+                <label htmlFor={`${fieldsId}-details`} className="mb-2 block text-sm font-semibold text-slate-700">
+                  {secondaryLabel}
+                </label>
+                <input
+                  id={`${fieldsId}-details`}
+                  type={isProducer ? "email" : "text"}
+                  required={isProducer}
+                  maxLength={secondaryLimit}
+                  value={form.secondary}
+                  disabled={isPlayback}
+                  onChange={(event) =>
+                    setForm((current) => ({
+                      ...current,
+                      secondary: event.target.value,
+                    }))
+                  }
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+                  placeholder={isProducer ? "producer@example.com" : `Optional ${secondaryLabel.toLowerCase()}`}
+                />
+              </div>
+
+              {supportsImage && (
+                <div
+                  data-tutorial={`catalog-${tutorialSlug}-image`}
+                  className="md:col-span-3"
+                >
+                  <label htmlFor={`${fieldsId}-image`} className="mb-2 block text-sm font-semibold text-slate-700">
+                    Profile Image
+                  </label>
+                  <div className="relative">
+                    <input
+                      id={`${fieldsId}-image`}
+                      type="file"
+                      disabled={isPlayback}
+                      accept="image/png,image/jpeg,image/webp"
+                      onChange={(event) => {
+                        const selected = event.target.files?.[0] || null;
+                        setImageError("");
+                        if (selected && (
+                          !["image/png", "image/jpeg", "image/webp"].includes(selected.type)
+                          || selected.size > 5 * 1024 * 1024
+                        )) {
+                          event.currentTarget.value = "";
+                          setImageError("Choose a JPG, PNG, or WEBP image up to 5 MB.");
+                          setForm((current) => ({ ...current, imageFile: null }));
+                          return;
+                        }
+                        setForm((current) => ({
+                          ...current,
+                          imageFile: selected,
+                        }));
+                      }}
+                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-blue-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-blue-700"
+                    />
+                  </div>
+                  <p className="mt-2 text-xs text-slate-500">
+                    JPG, PNG, or WEBP • Max 5MB
+                  </p>
+
+                  {imageError && <p role="alert" className="mt-2 text-xs text-red-700">{imageError}</p>}
+                  {localImagePreview && (
+                    <div className="mt-3 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
+                      <img
+                        src={localImagePreview}
+                        alt="Selected preview"
+                        className="h-14 w-14 rounded-md border border-emerald-200 object-cover"
+                      />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-xs font-medium text-slate-800">
+                          {form.imageFile?.name}
+                        </p>
+                        <p className="text-xs text-emerald-600 mt-1">Ready to upload</p>
+                        {title === "Directors" && (
+                          <button type="button" onClick={() => void cropImage()} className="mt-1 text-xs font-medium text-blue-700 hover:underline">
+                            Crop to a centred square
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div
+                className={`flex items-end gap-2 ${
+                  supportsImage ? "md:col-span-2" : "md:col-span-3"
+                }`}
+              >
+                <button
+                  data-tutorial={`catalog-${tutorialSlug}-submit`}
+                  type="submit"
+                  disabled={isPlayback || isBusy || !form.primary.trim()}
+                  className="inline-flex w-full flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  {isBusy ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Plus className="h-4 w-4" />
+                  )}
+                  {editingId ? "Update" : "Create entry"}
+                </button>
+
+                {(editingId || adding) && (
+                  <button
+                    aria-label="Cancel editing"
+                    data-tutorial={`catalog-${tutorialSlug}-cancel`}
+                    type="button"
+                    onClick={() => {
+                      if (!isPlayback) resetForm();
+                    }}
+                    disabled={isPlayback}
+                    className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+            </div>
+          </form>
+
+  );
 
   return (
     <section
@@ -338,6 +551,19 @@ function EntitySection({
           </div>
 
           <div className="flex flex-col items-end gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                resetForm();
+                setIsExpanded(true);
+                setAdding(true);
+              }}
+              disabled={isPlayback || isBusy}
+              className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
+            >
+              <Plus className="h-4 w-4" />
+              Add New Entry
+            </button>
             <div className="inline-flex items-center gap-3 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm shadow-sm">
               <div className="flex items-center gap-1">
                 <div className="h-2 w-2 rounded-full bg-emerald-500" />
@@ -368,152 +594,7 @@ function EntitySection({
 
       {isExpanded && (
         <>
-          {/* Form Section */}
-          <form
-            onSubmit={handleSubmit}
-            className="border-y border-slate-100 bg-slate-50/70 px-6 py-5"
-          >
-            <div className="mb-4 flex items-center gap-2">
-              <Plus className="h-4 w-4 text-slate-600" />
-              <span className="text-sm font-semibold text-slate-700">
-                {editingId ? "Edit entry" : "Add new entry"}
-              </span>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-12">
-              <div
-                data-tutorial={`catalog-${tutorialSlug}-primary`}
-                className={supportsImage ? "md:col-span-3" : "md:col-span-4"}
-              >
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  {primaryLabel}
-                </label>
-                <input
-                  value={form.primary}
-                  disabled={isPlayback}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      primary: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  placeholder={`e.g., ${
-                    title === "Directors"
-                      ? "Christopher Nolan"
-                      : title === "Actors"
-                        ? "Leonardo DiCaprio"
-                        : title === "Producers"
-                          ? "Ava DuVernay"
-                        : "Action"
-                  }`}
-                />
-              </div>
-
-              <div
-                data-tutorial={`catalog-${tutorialSlug}-secondary`}
-                className={supportsImage ? "md:col-span-4" : "md:col-span-5"}
-              >
-                <label className="mb-2 block text-sm font-semibold text-slate-700">
-                  {secondaryLabel}
-                </label>
-                <input
-                  value={form.secondary}
-                  disabled={isPlayback}
-                  onChange={(event) =>
-                    setForm((current) => ({
-                      ...current,
-                      secondary: event.target.value,
-                    }))
-                  }
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800 placeholder-slate-500 transition focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-                  placeholder={`Optional ${secondaryLabel.toLowerCase()}`}
-                />
-              </div>
-
-              {supportsImage && (
-                <div
-                  data-tutorial={`catalog-${tutorialSlug}-image`}
-                  className="md:col-span-3"
-                >
-                  <label className="mb-2 block text-sm font-semibold text-slate-700">
-                    Profile Image
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="file"
-                      disabled={isPlayback}
-                      accept="image/png,image/jpeg,image/webp"
-                      onChange={(event) => {
-                        const selected = event.target.files?.[0] || null;
-                        setForm((current) => ({
-                          ...current,
-                          imageFile: selected,
-                        }));
-                      }}
-                      className="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm text-slate-700 file:mr-2 file:rounded-md file:border-0 file:bg-blue-100 file:px-2 file:py-1 file:text-xs file:font-medium file:text-blue-700"
-                    />
-                  </div>
-                  <p className="mt-2 text-xs text-slate-500">
-                    JPG, PNG, or WEBP • Max 5MB
-                  </p>
-
-                  {localImagePreview && (
-                    <div className="mt-3 flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50/50 p-3">
-                      <img
-                        src={localImagePreview}
-                        alt="Selected preview"
-                        className="h-14 w-14 rounded-md border border-emerald-200 object-cover"
-                      />
-                      <div className="min-w-0 flex-1">
-                        <p className="truncate text-xs font-medium text-slate-800">
-                          {form.imageFile?.name}
-                        </p>
-                        <p className="text-xs text-emerald-600 mt-1">
-                          ✓ Ready to upload
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              <div
-                className={`flex items-end gap-2 ${
-                  supportsImage ? "md:col-span-2" : "md:col-span-3"
-                }`}
-              >
-                <button
-                  data-tutorial={`catalog-${tutorialSlug}-submit`}
-                  type="submit"
-                  disabled={isPlayback || isBusy || !form.primary.trim()}
-                  className="inline-flex w-full flex-1 items-center justify-center gap-2 rounded-lg bg-linear-to-r from-[#0f4ea8] to-[#1684ef] px-4 py-2.5 text-sm font-semibold text-white transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
-                >
-                  {isBusy ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Plus className="h-4 w-4" />
-                  )}
-                  {editingId ? "Update" : "Add"}
-                </button>
-
-                {editingId && (
-                  <button
-                    data-tutorial={`catalog-${tutorialSlug}-cancel`}
-                    type="button"
-                    onClick={() => {
-                      if (!isPlayback) resetForm();
-                    }}
-                    disabled={isPlayback}
-                    className="rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-                  >
-                    <X className="h-4 w-4" />
-                  </button>
-                )}
-              </div>
-            </div>
-          </form>
-
+          {!editingId && (adding || isPlayback) && entryForm}
           {/* Data Section */}
           <div className="px-6 py-6">
             {isLoading && !isPlayback ? (
@@ -542,7 +623,7 @@ function EntitySection({
                   No {title.toLowerCase()} yet
                 </p>
                 <p className="text-xs text-slate-500">
-                  Add your first entry using the form above to get started.
+                  Select Add New Entry to create the first record.
                 </p>
               </div>
             ) : (
@@ -574,8 +655,8 @@ function EntitySection({
                   </thead>
                   <tbody>
                     {displayRows.map((row) => (
+                      <Fragment key={row.id}>
                       <tr
-                        key={row.id}
                         className="border-b border-slate-100 transition hover:bg-blue-50/30 last:border-0"
                       >
                         <td className="px-4 py-3">
@@ -608,6 +689,27 @@ function EntitySection({
                               </span>
                             )}
                           </p>
+                          {isProducer && row.secondary && (
+                            row.emailVerified ? (
+                              <span className="text-xs font-medium text-emerald-700">Email verified</span>
+                            ) : (
+                              <button
+                                type="button"
+                                className="mt-1 text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
+                                disabled={isPlayback || isBusy}
+                                onClick={async () => {
+                                  try {
+                                    await onSendVerification?.(row.id);
+                                    toast.success("Verification email sent");
+                                  } catch (error) {
+                                    toast.error(getErrorMessage(error));
+                                  }
+                                }}
+                              >
+                                Send verification email
+                              </button>
+                            )
+                          )}
                         </td>
                         <td className="px-4 py-3">
                           <span
@@ -620,7 +722,7 @@ function EntitySection({
                             <span
                               className={`h-2 w-2 rounded-full ${
                                 row.status === "active"
-                                  ? "bg-emerald-500"
+                                  ? `bg-emerald-500 ${isProducer ? "motion-safe:animate-pulse" : ""}`
                                   : "bg-amber-500"
                               }`}
                             />
@@ -637,7 +739,10 @@ function EntitySection({
                             <button
                               data-tutorial={`catalog-${tutorialSlug}-edit`}
                               type="button"
+                              aria-label={`Edit ${row.primary}`}
                               onClick={() => {
+                                setAdding(false);
+                                setImageError("");
                                 setEditingId(row.id);
                                 setForm({
                                   primary: row.primary,
@@ -686,6 +791,12 @@ function EntitySection({
                           </div>
                         </td>
                       </tr>
+                      {editingId === row.id && (
+                        <tr>
+                          <td colSpan={supportsImage ? 6 : 5}>{entryForm}</td>
+                        </tr>
+                      )}
+                      </Fragment>
                     ))}
                   </tbody>
                 </table>
@@ -732,7 +843,7 @@ const mapProfileRows = (rows: CatalogProfile[] | undefined): EntityRow[] => {
     primary: row.full_name,
     secondary: row.bio,
     imageUrl: row.profile_image,
-    status: row.status,
+    status: row.is_active ? "active" : "inactive",
     updatedAt: row.updated_at,
   }));
 };
@@ -760,6 +871,7 @@ const mapProducerRows = (rows: CatalogProducer[] | undefined): EntityRow[] => {
     id: row.id,
     primary: row.full_name,
     secondary: row.email,
+    emailVerified: Boolean(row.email_verified_at),
     status: row.status,
     updatedAt: row.updated_at,
   }));
@@ -790,6 +902,7 @@ export default function CatalogManagementSection({
   const activateGenre = useActivateGenre();
 
   const createProducer = useCreateProducer();
+  const sendVerification = useSendProducerVerification();
   const updateProducer = useUpdateProducer();
   const deactivateProducer = useDeactivateProducer();
   const activateProducer = useActivateProducer();
@@ -842,12 +955,13 @@ export default function CatalogManagementSection({
             createProducer.isPending ||
             updateProducer.isPending ||
             deactivateProducer.isPending ||
-            activateProducer.isPending
+            activateProducer.isPending ||
+            sendVerification.isPending
           }
           onCreate={(values) =>
             createProducer.mutateAsync({
               full_name: values.primary,
-              email: values.secondary || undefined,
+              email: values.secondary,
             })
           }
           onUpdate={(id, values) =>
@@ -855,12 +969,13 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                email: values.secondary || undefined,
+                email: values.secondary,
               },
             })
           }
           onDeactivate={(id) => deactivateProducer.mutateAsync(id)}
           onActivate={(id) => activateProducer.mutateAsync(id)}
+          onSendVerification={(id) => sendVerification.mutateAsync(id)}
         />
       )}
 
@@ -879,7 +994,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createDirector.mutateAsync({
               full_name: values.primary,
-              bio: values.secondary || undefined,
+              bio: values.secondary,
               profile_image_file: values.imageFile || undefined,
             })
           }
@@ -888,7 +1003,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                bio: values.secondary || undefined,
+                bio: values.secondary,
                 profile_image_file: values.imageFile || undefined,
               },
             })
@@ -911,7 +1026,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createActor.mutateAsync({
               full_name: values.primary,
-              bio: values.secondary || undefined,
+              bio: values.secondary,
               profile_image_file: values.imageFile || undefined,
             })
           }
@@ -920,7 +1035,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 full_name: values.primary,
-                bio: values.secondary || undefined,
+                bio: values.secondary,
                 profile_image_file: values.imageFile || undefined,
               },
             })
@@ -942,7 +1057,7 @@ export default function CatalogManagementSection({
           onCreate={(values) =>
             createGenre.mutateAsync({
               name: values.primary,
-              description: values.secondary || undefined,
+              description: values.secondary,
             })
           }
           onUpdate={(id, values) =>
@@ -950,7 +1065,7 @@ export default function CatalogManagementSection({
               id,
               data: {
                 name: values.primary,
-                description: values.secondary || undefined,
+                description: values.secondary,
               },
             })
           }
