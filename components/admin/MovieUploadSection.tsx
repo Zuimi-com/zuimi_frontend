@@ -13,6 +13,8 @@ import {
   Movie,
   MovieAsset,
   useCreateMovie,
+  useGetMovieDrafts,
+  useSaveMovieDraft,
   useGetMovieAssets,
   useGetMovies,
   useProcessMovieAssetJob,
@@ -56,6 +58,14 @@ type MovieFormState = {
   titleSvgFile: File | null;
   trailerFile: File | null;
 };
+
+type DraftMetadata = Omit<MovieFormState, "posterFile" | "titleSvgFile" | "trailerFile">;
+
+const FILM_LANGUAGES = [
+  "English", "Yoruba", "Igbo", "Hausa", "Nigerian Pidgin", "Arabic",
+  "French", "Portuguese", "Spanish", "Swahili", "Other",
+];
+const SYNOPSIS_LIMIT = 2000;
 
 const initialMovieForm: MovieFormState = {
   title: "",
@@ -444,6 +454,7 @@ export default function MovieUploadSection() {
   const [sourceFileKey, setSourceFileKey] = useState(0);
   const videoHeading = useRef<HTMLHeadingElement>(null);
   const queueHeading = useRef<HTMLHeadingElement>(null);
+  const [draftId, setDraftId] = useState<string>();
   const [movieForm, setMovieForm] = useState<MovieFormState>(initialMovieForm);
   const [selectedMovieId, setSelectedMovieId] = useState("");
   const [sourceFile, setSourceFile] = useState<File | null>(null);
@@ -458,6 +469,8 @@ export default function MovieUploadSection() {
   const producersQuery = useGetProducers(!isPlayback);
 
   const createMovie = useCreateMovie();
+  const drafts = useGetMovieDrafts<Partial<DraftMetadata>>(!isPlayback);
+  const saveDraft = useSaveMovieDraft<DraftMetadata>();
   const uploadAsset = useUploadMovieAsset();
   const processJob = useProcessMovieAssetJob();
   const retryAsset = useRetryMovieAssetProcessing();
@@ -589,9 +602,23 @@ export default function MovieUploadSection() {
     setMovieForm((current) => ({ ...current, ...patch }));
   };
 
+  const handleSaveDraft = async () => {
+    if (isPlayback || createMovie.isPending || saveDraft.isPending) return;
+    const { posterFile, titleSvgFile, trailerFile, ...metadata } = movieForm;
+    try {
+      const draft = await saveDraft.mutateAsync({ id: draftId, metadata });
+      setDraftId(draft.id);
+      toast.success(posterFile || titleSvgFile || trailerFile
+        ? "Draft saved. Reattach media files when you reopen it."
+        : "Draft saved privately.");
+    } catch (error) {
+      toast.error(getErrorMessage(error));
+    }
+  };
+
   const handleCreateMovie = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isPlayback) return;
+    if (isPlayback || saveDraft.isPending || createMovie.isPending) return;
     setFormError("");
     setNotice("");
 
@@ -626,6 +653,7 @@ export default function MovieUploadSection() {
 
     try {
       const movie = await createMovie.mutateAsync({
+        draft_id: draftId,
         title: movieForm.title.trim(),
         description: movieForm.description.trim() || undefined,
         release_date: movieForm.releaseDate,
@@ -650,6 +678,7 @@ export default function MovieUploadSection() {
       requestAnimationFrame(() => videoHeading.current?.focus());
       setSelectedMovieId(movie.id);
       setMovieForm(initialMovieForm);
+      setDraftId(undefined);
       formElement.reset();
       setMovieFileKey((current) => current + 1);
     } catch (error) {
@@ -871,9 +900,47 @@ export default function MovieUploadSection() {
             </div>
           </div>
 
+          {!isPlayback && (
+            <div className="flex flex-wrap items-end gap-3 border-b border-slate-100 px-4 py-4 sm:px-6">
+              <label className="block space-y-1 text-sm font-medium text-slate-700">
+                <span>Resume a private draft</span>
+                <select
+                  value={draftId ?? ""}
+                  disabled={drafts.isPending || drafts.isError || saveDraft.isPending || createMovie.isPending}
+                  onChange={(event) => {
+                    const draft = drafts.data?.find((row) => row.id === event.target.value);
+                    if (!draft) return;
+                    setDraftId(draft.id);
+                    setMovieForm({ ...initialMovieForm, ...draft.metadata });
+                    setMovieFileKey((current) => current + 1);
+                    setFormError("");
+                  }}
+                  className="block rounded-lg border border-slate-300 bg-white px-3 py-2"
+                >
+                  <option value="" disabled>{drafts.isPending ? "Loading drafts…" : "Select a saved draft"}</option>
+                  {drafts.data?.map((draft) => (
+                    <option key={draft.id} value={draft.id}>
+                      {draft.metadata.title?.trim() || "Untitled film"} · {new Date(draft.updated_at).toLocaleString()}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              {drafts.isError && <p role="status" className="text-sm text-red-700">Saved drafts could not be loaded.</p>}
+              {draftId && (
+                <button type="button" disabled={saveDraft.isPending || createMovie.isPending} className="rounded-lg border px-3 py-2 text-sm" onClick={() => {
+                  setDraftId(undefined);
+                  setMovieForm(initialMovieForm);
+                  setMovieFileKey((current) => current + 1);
+                  setFormError("");
+                }}>
+                  Start a new film
+                </button>
+              )}
+            </div>
+          )}
           <form onSubmit={handleCreateMovie} className="px-4 py-6 sm:px-6">
             <fieldset
-              disabled={isPlayback || createMovie.isPending}
+              disabled={isPlayback || createMovie.isPending || saveDraft.isPending}
               className="min-w-0 space-y-6"
             >
               <h3 className="font-semibold text-slate-900">The essentials</h3>
@@ -1012,6 +1079,7 @@ export default function MovieUploadSection() {
                   Synopsis
                 </span>
                 <textarea
+                  maxLength={SYNOPSIS_LIMIT}
                   value={movieForm.description}
                   onChange={(event) =>
                     updateMovieForm({ description: event.target.value })
@@ -1020,6 +1088,9 @@ export default function MovieUploadSection() {
                   rows={4}
                   className="w-full resize-none rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
                 />
+                <span className="mt-1 block text-xs text-slate-600">
+                  {SYNOPSIS_LIMIT - movieForm.description.length} characters remaining
+                </span>
               </label>
 
               <div className="grid gap-4 md:grid-cols-3">
@@ -1047,13 +1118,19 @@ export default function MovieUploadSection() {
                   <span className="mb-2 block text-sm font-semibold text-slate-700">
                     Language
                   </span>
-                  <input
+                  <select
                     value={movieForm.language}
                     onChange={(event) =>
                       updateMovieForm({ language: event.target.value })
                     }
                     className="w-full rounded-lg border border-slate-300 px-3 py-2.5 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20"
-                  />
+                  >
+                    <option value="">Select a language</option>
+                    {movieForm.language && !FILM_LANGUAGES.includes(movieForm.language) && (
+                      <option value={movieForm.language}>{movieForm.language}</option>
+                    )}
+                    {FILM_LANGUAGES.map((language) => <option key={language}>{language}</option>)}
+                  </select>
                 </label>
 
                 <label data-tutorial="movie-rating" className="block">
@@ -1144,6 +1221,14 @@ export default function MovieUploadSection() {
 
               <div className="flex justify-end">
                 <button
+                type="button"
+                disabled={isPlayback || createMovie.isPending || saveDraft.isPending}
+                onClick={() => void handleSaveDraft()}
+                className="mr-3 rounded-lg border border-slate-300 px-4 py-2.5 text-sm font-semibold text-slate-800 disabled:opacity-50"
+              >
+                {saveDraft.isPending ? "Saving draft…" : "Save as Draft"}
+              </button>
+              <button
                   data-tutorial="movie-save-details"
                   type="submit"
                   disabled={
