@@ -330,6 +330,34 @@ function EntitySection({
     return <Plus className="h-5 w-5" />;
   };
 
+  const cropImage = async () => {
+    const original = form.imageFile;
+    if (!original) return;
+    try {
+      const bitmap = await createImageBitmap(original);
+      try {
+        const edge = Math.min(bitmap.width, bitmap.height);
+        const canvas = document.createElement("canvas");
+        canvas.width = canvas.height = Math.min(edge, 1024);
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("Image editor unavailable");
+        context.drawImage(
+          bitmap, (bitmap.width - edge) / 2, (bitmap.height - edge) / 2,
+          edge, edge, 0, 0, canvas.width, canvas.height,
+        );
+        const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/png"));
+        if (!blob || blob.size > 5 * 1024 * 1024) throw new Error("Cropped image is too large");
+        const cropped = new File([blob], "profile-crop.png", { type: "image/png" });
+        setForm((current) => current.imageFile === original ? { ...current, imageFile: cropped } : current);
+        setImageError("");
+      } finally {
+        bitmap.close();
+      }
+    } catch {
+      setImageError("Could not crop this image. You can upload the original or choose another image.");
+    }
+  };
+
   const entryForm = (
           <form
             id={formId}
@@ -451,9 +479,12 @@ function EntitySection({
                         <p className="truncate text-xs font-medium text-slate-800">
                           {form.imageFile?.name}
                         </p>
-                        <p className="text-xs text-emerald-600 mt-1">
-                          ✓ Ready to upload
-                        </p>
+                        <p className="text-xs text-emerald-600 mt-1">Ready to upload</p>
+                        {title === "Directors" && (
+                          <button type="button" onClick={() => void cropImage()} className="mt-1 text-xs font-medium text-blue-700 hover:underline">
+                            Crop to a centred square
+                          </button>
+                        )}
                       </div>
                     </div>
                   )}
