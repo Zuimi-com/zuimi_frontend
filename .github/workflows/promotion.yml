@@ -1,0 +1,28 @@
+name: Zuimi promotion policy
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, reopened, synchronize, edited, ready_for_review]
+
+permissions:
+  contents: read
+
+jobs:
+  promotion:
+    name: zuimi-promotion-source
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Enforce same-repository staging promotion
+        env:
+          TARGET: ${{ github.event.pull_request.base.ref }}
+          SOURCE: ${{ github.event.pull_request.head.ref }}
+          SOURCE_REPO: ${{ github.event.pull_request.head.repo.full_name }}
+          TARGET_REPO: ${{ github.repository }}
+        run: |
+          set -eu
+          if [ "$SOURCE" != staging ] || [ "$SOURCE_REPO" != "$TARGET_REPO" ]; then
+            echo "::error::Only this repository's staging branch may be promoted to the default branch."
+            exit 1
+          fi

@@ -1,0 +1,2 @@
+# Protect governance and CI configuration from unauthorized changes.
+/.github/ @Leanstix
