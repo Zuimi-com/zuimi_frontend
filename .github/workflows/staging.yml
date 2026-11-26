@@ -3,13 +3,15 @@ name: Staging CI and image publish
 on:
   push:
     branches: [staging]
+  pull_request:
+    branches: [staging]
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: zuimi-staging-image-${{ github.repository }}
+  group: zuimi-staging-image-${{ github.repository }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
