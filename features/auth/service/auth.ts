@@ -1,12 +1,9 @@
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 
-type LoginPayLoad = {
-  email: string;
-  password: string;
-};
+type LoginPayLoad = { email: string; password: string } | { challenge_token: string; otp: string };
 
-export interface LoginResponse {
+export interface AdminSessionResponse {
   user: {
     id: string;
     email: string;
@@ -17,6 +14,8 @@ export interface LoginResponse {
     };
   };
 }
+
+export type LoginResponse = AdminSessionResponse | { requires_2fa: true; challenge_token: string };
 
 export const useAdminLogin = () => {
   return useMutation({
