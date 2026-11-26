@@ -10,6 +10,7 @@ permissions:
 
 jobs:
   validate:
+    name: zuimi-merge-validation
     runs-on: ubuntu-latest
     timeout-minutes: 20
     env:
@@ -24,4 +25,5 @@ jobs:
       - run: npx tsc --noEmit
       - run: npm run test:coordination
       - run: npm run test:tutorials
+      - run: npm run test:admin-session
       - run: npm run build
