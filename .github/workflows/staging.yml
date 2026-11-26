@@ -1,0 +1,59 @@
+name: Staging CI and image publish
+
+on:
+  push:
+    branches: [staging]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: zuimi-staging-image-${{ github.repository }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      NEXT_PUBLIC_BACKEND_URL: https://backend.example.test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npx tsc --noEmit
+      - run: npm run test:coordination
+      - run: npm run test:tutorials
+      - run: npm run build
+
+  publish:
+    needs: validate
+    if: github.ref == 'refs/heads/staging'
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+      packages: write
+    env:
+      GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      IMAGE_NAME: ghcr.io/zuimi-com/zuimi-frontend
+    steps:
+      - uses: actions/checkout@v4
+      - name: Authenticate to GHCR
+        run: printf '%s' "$GHCR_TOKEN" | docker login ghcr.io -u "$GITHUB_ACTOR" --password-stdin
+      - name: Build versioned staging image
+        run: |
+          set -euo pipefail
+          docker build --pull -f Dockerfile.staging --build-arg NEXT_PUBLIC_BACKEND_URL=http://backend:8000 --label "org.opencontainers.image.source=https://github.com/$GITHUB_REPOSITORY" --label "org.opencontainers.image.revision=$GITHUB_SHA" -t "$IMAGE_NAME:sha-$GITHUB_SHA" -t "$IMAGE_NAME:staging" .
+      - name: Publish image after tests pass
+        run: |
+          set -euo pipefail
+          docker push "$IMAGE_NAME:sha-$GITHUB_SHA"
+          docker push "$IMAGE_NAME:staging"
+      - name: Log out
+        if: always()
+        run: docker logout ghcr.io
