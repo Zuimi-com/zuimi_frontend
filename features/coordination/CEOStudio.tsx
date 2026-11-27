@@ -16,10 +16,12 @@ export default function CEOStudio({
   items,
   onEdit,
   onCreate,
+  canManage,
 }: {
   items: Item[];
   onEdit: (i: Item) => void;
   onCreate: (i: Draft) => void;
+  canManage: boolean;
 }) {
   const [view, setView] = useState("calendar");
   const [week, setWeek] = useState(weekOf(todayLagos()));
@@ -175,7 +177,7 @@ export default function CEOStudio({
                         </button>
                       ))}
                     <button
-                      aria-label={`Add post for ${day}`}
+                      aria-label={`Add post for ${day}`} disabled={!canManage}
                       onClick={() =>
                         onCreate({
                           ...emptyItem("post", "CEO"),
@@ -211,7 +213,7 @@ export default function CEOStudio({
           action={
             <button
               className="zb-button"
-              onClick={() => onCreate(emptyItem("idea", "CEO"))}
+              disabled={!canManage} onClick={() => onCreate(emptyItem("idea", "CEO"))}
             >
               <Plus size={13} />
               Add idea
@@ -233,7 +235,7 @@ export default function CEOStudio({
           <div className="zb-actions mb-5">
             <button
               className="zb-button"
-              onClick={() => onCreate(emptyItem("template", "CEO"))}
+              disabled={!canManage} onClick={() => onCreate(emptyItem("template", "CEO"))}
             >
               <Plus size={13} />
               Create reusable template
@@ -262,7 +264,7 @@ export default function CEOStudio({
                 <div className="zb-actions">
                   <button
                     className="zb-button zb-gradient"
-                    onClick={() => createPost(t.title, t.text)}
+                    disabled={!canManage} onClick={() => createPost(t.title, t.text)}
                   >
                     Use for a post
                   </button>
@@ -310,7 +312,7 @@ export default function CEOStudio({
               {i.kind === "idea" && (
                 <button
                   className="zb-link"
-                  onClick={() => createPost(i.title, i.details)}
+                  disabled={!canManage} onClick={() => createPost(i.title, i.details)}
                 >
                   Draft post
                 </button>

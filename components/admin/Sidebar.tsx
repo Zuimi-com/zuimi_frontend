@@ -1,9 +1,11 @@
 "use client";
 
+import { canVisitAdminPage } from "@/features/dashboard/permissions";
 import { AdminSection } from "@/types/admin";
 import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 import Link from "next/link";
+import { CalendarDays, ClipboardList, Flag, ShieldCheck, UsersRound } from "lucide-react";
 import { usePathname } from "next/navigation";
 
 type NavItem = {
@@ -22,6 +24,11 @@ export default function Sidebar() {
   const { isPlayback } = useAdminTutorial();
   const items: NavItem[] = [
     { key: "/admin/creator-applications", label: "Creator Applications", icon: <span aria-hidden="true" className="text-xl">◇</span> },
+    { key: "/admin/admins", label: "Admin Access", icon: <UsersRound size={20} /> },
+    { key: "/admin/audit", label: "Audit History", icon: <ClipboardList size={20} /> },
+    { key: "/admin/reports", label: "Report Review", icon: <Flag size={20} /> },
+    { key: "/admin/forensics", label: "Forensics", icon: <ShieldCheck size={20} /> },
+    { key: "/eco/boarddash/55019", label: "Coordination Board", icon: <CalendarDays size={20} /> },
     ...(admin?.capabilities?.manage_operators
       ? [{ key: "/admin/operators" as AdminSection, label: "Operators", icon: <span aria-hidden="true" className="text-xl">◈</span> }]
       : []),
@@ -266,7 +273,7 @@ export default function Sidebar() {
     >
       <div className="flex min-h-full flex-col rounded-xl border border-gray-100 bg-white p-4 shadow-md">
         <nav className="space-y-1">
-          {items.map((item) => {
+          {items.filter(item => canVisitAdminPage(admin, item.key)).map((item) => {
             const active = item.key === pathname;
 
             return (

@@ -1,3 +1,4 @@
+import AdminPageGuard from "@/features/dashboard/common/admin-page-guard";
 import Header from "@/components/admin/Header";
 import Sidebar from "@/components/admin/Sidebar";
 import AdminRouteGuard from "@/features/dashboard/common/admin-auth-guard";
@@ -16,7 +17,7 @@ const AdminDashboardLayout = ({ children }: PropsWithChildren) => {
             <div className="flex min-h-0 flex-1 overflow-hidden">
               <Sidebar />
               <main className="min-w-0 flex-1 overflow-y-auto overscroll-contain p-8">
-                {children}
+                <AdminPageGuard>{children}</AdminPageGuard>
               </main>
             </div>
           </div>

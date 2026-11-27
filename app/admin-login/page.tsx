@@ -96,7 +96,7 @@ export default function Page() {
               {!email && (
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none text-[#6A7280] pt-6">
                   <Image src={mail} alt="mail" width={20} height={20} />
-                  <span>admin@zuimi.com</span>
+                  <span>admin@zuimi.com.ng</span>
                 </div>
               )}
 

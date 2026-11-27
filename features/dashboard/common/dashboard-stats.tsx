@@ -3,9 +3,12 @@
 import { FileText, Send, Users, Clock3 } from "lucide-react";
 import Link from "next/link";
 import { useGetNewsletterSummary } from "@/features/dashboard/service/newsletter";
+import { hasAdminPermission } from "../permissions";
+import { useAdminAuth } from "../context/admin-auth-context";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
 export default function DashboardStats() {
+  const { admin } = useAdminAuth();
   const { isPlayback } = useAdminTutorial();
   const summary = useGetNewsletterSummary(!isPlayback);
 
@@ -58,14 +61,14 @@ export default function DashboardStats() {
           ) : null}
         </div>
 
-        <Link
+        {hasAdminPermission(admin, "newsletter", "manage") && <Link
           href="/admin/compose-letter"
           data-tutorial="admin-compose-shortcut"
           onClick={(event) => isPlayback && event.preventDefault()}
           className="rounded-lg bg-zuimi-blue px-4 py-2 text-sm font-medium text-white transition hover:opacity-90"
         >
           Compose Letter
-        </Link>
+        </Link>}
       </div>
 
       <div

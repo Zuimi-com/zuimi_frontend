@@ -30,7 +30,7 @@ export async function POST(request: Request) {
     cache: "no-store",
   });
   const verificationData = await verification.json();
-  if (!verification.ok || !verificationData.user?.is_staff) {
+  if (!verification.ok || !verificationData.user?.is_dashboard_admin) {
     return NextResponse.json(
       { detail: "Admin privileges could not be verified." },
       { status: 403 },

@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 
-export default function ForensicsLaunch() {
+export default function ForensicsLaunch({ basePath = "/api/operator/backend" }: { basePath?: string }) {
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   async function openConsole() {
     setBusy(true); setError("");
     try {
-      const response = await fetch("/api/operator/backend/operators/forensics-ticket", { method: "POST" });
+      const response = await fetch(`${basePath}/operators/forensics-ticket`, { method: "POST" });
       const data = await response.json();
       if (!response.ok) { setError(data.detail ?? "Forensics is unavailable."); return; }
       const form = document.createElement("form");

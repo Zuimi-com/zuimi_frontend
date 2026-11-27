@@ -1,6 +1,8 @@
 "use client";
 
 import Link from "next/link";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { hasAdminPermission } from "@/features/dashboard/permissions";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 import { NewsletterBroadcast } from "@/features/dashboard/service/newsletter";
 
@@ -76,6 +78,7 @@ export default function NewsletterHistory({
   rows: NewsletterBroadcast[];
 }) {
   const { isPlayback } = useAdminTutorial();
+  const { admin } = useAdminAuth();
   const displayedRows = isPlayback ? demoBroadcasts : rows;
 
   return (
@@ -115,7 +118,7 @@ export default function NewsletterHistory({
                     className="px-6 py-4 text-sm font-medium text-gray-900"
                   >
                     {row.subject}
-                    {row.status === "DRAFT" && !isPlayback && (
+                    {row.status === "DRAFT" && !isPlayback && hasAdminPermission(admin, "newsletter", "manage") && (
                       <Link
                         href={`/admin/compose-letter?draft=${encodeURIComponent(row.id)}`}
                         className="ml-3 font-medium text-blue-700 hover:underline"

@@ -52,7 +52,9 @@ const sections = [
   { id: "logs", label: "Decisions & notes", icon: MessageSquareText },
   { id: "weekly", label: "Weekly goals", icon: Flag },
 ];
-export default function Board() {
+export default function Board({ canManage, canViewCreators, canManageCreators, canViewAudit }: {
+  canManage: boolean; canViewCreators: boolean; canManageCreators: boolean; canViewAudit: boolean;
+}) {
   const [section, setSection] = useState("overview");
   const [items, setItems] = useState<Item[]>([]);
   const [apps, setApps] = useState<Application[]>([]);
@@ -73,7 +75,7 @@ export default function Board() {
     try {
       const [work, applications, analytics] = await Promise.all([
         api<Item[]>("work/"),
-        api<Application[]>("applications/"),
+        canViewCreators ? api<Application[]>("applications/") : Promise.resolve([]),
         api<{ rows: Campaign[] }>("campaigns/analytics/"),
       ]);
       setItems(work);
@@ -86,11 +88,12 @@ export default function Board() {
       setLoading(false);
       setSyncing(false);
     }
-  }, []);
+  }, [canViewCreators]);
   useEffect(() => {
     void load();
   }, [load]);
   const save = async (value: Draft | Item) => {
+    if (!canManage) return;
     await api("id" in value ? `work/${value.id}/` : "work/", {
       method: "id" in value ? "PATCH" : "POST",
       body: JSON.stringify(value),
@@ -101,7 +104,7 @@ export default function Board() {
     kind: Kind = "task",
     role: Role = owner === "All" ? "CEO" : owner,
   ) =>
-    setEditor({
+    canManage && setEditor({
       ...emptyItem(kind, role),
       week_start: ["goal", "commitment"].includes(kind) ? week : null,
     });
@@ -127,6 +130,7 @@ export default function Board() {
           .includes(search.toLowerCase()),
     );
   async function seed() {
+    if (!canManage) return;
     setSeeding(true);
     setError("");
     try {
@@ -207,7 +211,7 @@ export default function Board() {
                           type="checkbox"
                           aria-label={`Accept scope: ${i.title}`}
                           checked={closed(i)}
-                          disabled={savingScope}
+                          disabled={!canManage || savingScope}
                           style={{ width: 16, height: 16, flexShrink: 0 }}
                           onChange={async (e) => {
                             const accepted = e.target.checked;
@@ -315,7 +319,7 @@ export default function Board() {
           </a>
           <p className="zb-brand-label">Delivery & Growth</p>
           <nav aria-label="Workspace navigation">
-            {sections.map((s) => (
+            {sections.filter(s => s.id !== "creators" || canViewCreators).map((s) => (
               <button
                 key={s.id}
                 aria-current={section === s.id ? "page" : undefined}
@@ -396,7 +400,7 @@ export default function Board() {
                     : "MVP delivery and public brand-building, together. Africa-first film distribution. Pay for the films you choose."}
               </p>
             </div>
-            <button
+            {canManage && <button
               className="zb-button zb-gradient"
               onClick={() =>
                 add(
@@ -424,7 +428,7 @@ export default function Board() {
                     : section === "ceo"
                       ? "post"
                       : "work item"}
-            </button>
+            </button>}
           </header>
           {error && (
             <div role="alert" className="zb-error">
@@ -537,7 +541,7 @@ export default function Board() {
                       empty="No commitments recorded for this week. Turn intentions into owned, dated actions."
                     />
                   </Panel>
-                  <Panel title="Creator momentum">
+                  {canViewCreators && <Panel title="Creator momentum">
                     <div className="zb-panel-body">
                       <strong className="text-3xl">{apps.length}</strong>
                       <p className="zb-notice">
@@ -552,7 +556,7 @@ export default function Board() {
                         Open pipeline <ArrowUpRight size={13} />
                       </button>
                     </div>
-                  </Panel>
+                  </Panel>}
                 </div>
               </div>
             </>
@@ -600,7 +604,7 @@ export default function Board() {
                   planned; review them with the team.
                 </p>
                 <button
-                  disabled={seeding}
+                  disabled={!canManage || seeding}
                   onClick={() => void seed()}
                   className="zb-button mt-4"
                 >
@@ -614,13 +618,13 @@ export default function Board() {
             </>
           )}
           {section === "ceo" && (
-            <CEOStudio items={items} onEdit={setEditor} onCreate={setEditor} />
+            <CEOStudio items={items} onEdit={setEditor} onCreate={setEditor} canManage={canManage} />
           )}
           {section === "campaigns" && (
-            <Campaigns campaigns={campaigns} onRefresh={load} />
+            <Campaigns campaigns={campaigns} onRefresh={load} canManage={canManage} />
           )}
-          {section === "creators" && (
-            <CreatorPipeline applications={apps} onRefresh={load} />
+          {section === "creators" && canViewCreators && (
+            <CreatorPipeline applications={apps} onRefresh={load} canManage={canManageCreators} />
           )}
           {section === "logs" && (
             <>
@@ -658,7 +662,7 @@ export default function Board() {
                 </label>
               </div>
               <div className="zb-actions mb-5">
-                <button className="zb-button" onClick={() => add("commitment")}>
+                <button className="zb-button" disabled={!canManage} onClick={() => add("commitment")}>
                   Add commitment
                 </button>
               </div>
@@ -682,6 +686,8 @@ export default function Board() {
           items={items}
           onClose={() => setEditor(null)}
           onSave={save}
+          canManage={canManage}
+          canViewAudit={canViewAudit}
         />
       )}
     </div>

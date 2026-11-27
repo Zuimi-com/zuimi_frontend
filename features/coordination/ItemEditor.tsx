@@ -17,11 +17,15 @@ export default function ItemEditor({
   items,
   onClose,
   onSave,
+  canManage,
+  canViewAudit,
 }: {
   initial: Draft | Item;
   items: Item[];
   onClose: () => void;
   onSave: (value: Draft | Item) => Promise<void>;
+  canManage: boolean;
+  canViewAudit: boolean;
 }) {
   const [value, setValue] = useState(initial);
   const [busy, setBusy] = useState(false);
@@ -37,15 +41,16 @@ export default function ItemEditor({
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     ref.current?.showModal();
-    if ("id" in initial)
+    if (canViewAudit && "id" in initial)
       api<typeof history>(`work/${initial.id}/history/`)
         .then(setHistory)
         .catch(() => setHistory([]));
-  }, [initial]);
+  }, [canViewAudit, initial]);
   const change = (key: string, val: unknown) =>
     setValue((v) => ({ ...v, [key]: val }));
   async function submit(event: FormEvent) {
     event.preventDefault();
+    if (!canManage) return;
     setBusy(true);
     setError("");
     try {
@@ -70,7 +75,7 @@ export default function ItemEditor({
         <header>
           <div>
             <p className="zb-eyebrow">Shared accountability</p>
-            <h2>{"id" in initial ? "Edit work item" : "Create work item"}</h2>
+            <h2>{"id" in initial ? (canManage ? "Edit work item" : "Work item") : "Create work item"}</h2>
           </div>
           <button
             type="button"
@@ -81,7 +86,7 @@ export default function ItemEditor({
             <X size={22} />
           </button>
         </header>
-        <div className="zb-fields">
+        <fieldset className="zb-fields" disabled={!canManage}>
           <label className="zb-field zb-field-full">
             Title
             <input
@@ -250,13 +255,13 @@ export default function ItemEditor({
               </p>
             </>
           )}
-        </div>
+        </fieldset>
         {error && (
           <div role="alert" className="zb-error">
             {error}
           </div>
         )}
-        {history.length > 0 && (
+        {canViewAudit && history.length > 0 && (
           <details>
             <summary>Revision history · {history.length} saved changes</summary>
             {history.map((h) => (
@@ -279,11 +284,11 @@ export default function ItemEditor({
             disabled={busy}
             onClick={onClose}
           >
-            Cancel
+            {canManage ? "Cancel" : "Close"}
           </button>
-          <button className="zb-button zb-gradient" disabled={busy}>
+          {canManage && <button className="zb-button zb-gradient" disabled={busy}>
             {busy ? "Saving…" : "Save item"}
-          </button>
+          </button>}
         </footer>
       </form>
     </dialog>

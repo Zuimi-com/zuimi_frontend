@@ -6,9 +6,11 @@ import { Panel, Stats } from "./ui";
 export default function Campaigns({
   campaigns,
   onRefresh,
+  canManage,
 }: {
   campaigns: Campaign[];
   onRefresh: () => Promise<void>;
+  canManage: boolean;
 }) {
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -104,7 +106,7 @@ export default function Campaigns({
         </p>
       </div>
       <Panel title="Create a campaign link">
-        <form className="zb-panel-body" onSubmit={submit}>
+        {canManage && <form className="zb-panel-body" onSubmit={submit}>
           <div className="zb-fields">
             <label className="zb-field">
               Campaign / placement name
@@ -139,7 +141,7 @@ export default function Campaigns({
               </select>
             </label>
             <div className="flex items-end">
-              <button disabled={busy} className="zb-button zb-gradient">
+              <button disabled={!canManage || busy} className="zb-button zb-gradient">
                 <Plus size={14} />
                 {busy ? "Saving…" : "Generate explicit link"}
               </button>
@@ -157,7 +159,7 @@ export default function Campaigns({
               />
             </div>
           )}
-        </form>
+        </form>}
       </Panel>
       {error && (
         <div role="alert" className="zb-error">
@@ -232,7 +234,7 @@ export default function Campaigns({
                   <td>
                     {c.code ? (
                       <button
-                        disabled={busy}
+                        disabled={!canManage || busy}
                         className="zb-link"
                         onClick={() => void toggle(c)}
                       >

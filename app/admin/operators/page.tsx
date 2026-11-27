@@ -152,7 +152,7 @@ export default function OperatorsPage() {
           Email
           <input
             className="mt-1 w-full rounded border p-2"
-            type="email"
+            type="email" title="Use a dedicated @zuimi.com.ng work email" placeholder="name@zuimi.com.ng"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             disabled={isPlayback}
