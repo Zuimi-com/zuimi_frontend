@@ -1,4 +1,5 @@
 import axios from "axios";
+import type { AdminUser } from "@/features/dashboard/permissions";
 import { useMutation } from "@tanstack/react-query";
 
 type LoginPayLoad = {
@@ -6,17 +7,7 @@ type LoginPayLoad = {
   password: string;
 };
 
-export interface LoginResponse {
-  user: {
-    id: string;
-    email: string;
-    is_staff: true;
-    is_superuser: boolean;
-    capabilities?: {
-      manage_operators?: boolean;
-    };
-  };
-}
+export type LoginResponse = { user: AdminUser };
 
 export const useAdminLogin = () => {
   return useMutation({
