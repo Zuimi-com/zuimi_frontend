@@ -11,6 +11,7 @@ import {
   visibleAdminTutorials,
 } from "@/lib/tutorials/adminTutorials";
 import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { canVisitAdminPage, hasAdminPermission } from "@/features/dashboard/permissions";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import {
   createContext,
@@ -46,10 +47,16 @@ export function AdminTutorialProvider({ children }: { children: ReactNode }) {
   const searchParams = useSearchParams();
   const capabilities: Partial<Record<AdminCapability, boolean>> =
     admin?.capabilities ?? {};
+  const canRunTutorial = useCallback((tutorial: AdminTutorialDefinition) => {
+    if (!canVisitAdminPage(admin, tutorial.route)) return false;
+    if (tutorial.route === "/admin/movies") return hasAdminPermission(admin, "catalog", "manage");
+    return true;
+  }, [admin]);
   const requestedTutorial = adminTutorialById(searchParams.get("tutorial"));
   const activeTutorial =
     requestedTutorial &&
     requestedTutorial.route === pathname &&
+    canRunTutorial(requestedTutorial) &&
     (!requestedTutorial.capability || capabilities[requestedTutorial.capability])
       ? requestedTutorial
       : null;
@@ -136,12 +143,12 @@ export function AdminTutorialProvider({ children }: { children: ReactNode }) {
   }, [pathname, router, searchParams]);
 
   const pageTutorials = useMemo(
-    () => tutorialsForRoute(pathname, capabilities),
-    [capabilities, pathname],
+    () => tutorialsForRoute(pathname, capabilities).filter(canRunTutorial),
+    [canRunTutorial, capabilities, pathname],
   );
   const tutorials = useMemo(
-    () => visibleAdminTutorials(capabilities),
-    [capabilities],
+    () => visibleAdminTutorials(capabilities).filter(canRunTutorial),
+    [canRunTutorial, capabilities],
   );
 
   const value = useMemo<AdminTutorialContextValue>(

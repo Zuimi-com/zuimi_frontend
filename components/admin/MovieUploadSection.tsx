@@ -39,6 +39,8 @@ import {
 } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import toast from "react-hot-toast";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { hasAdminPermission } from "@/features/dashboard/permissions";
 import Link from "next/link";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
@@ -308,6 +310,8 @@ function AssetStatusBadge({ asset }: { asset: MovieAsset }) {
 function AssetActions({
   asset,
   isBusy,
+  canManage,
+  canPublish,
   onProcess,
   onRetry,
   onPublish,
@@ -315,6 +319,8 @@ function AssetActions({
 }: {
   asset: MovieAsset;
   isBusy: boolean;
+  canManage: boolean;
+  canPublish: boolean;
   onProcess: () => void;
   onRetry: () => void;
   onPublish: () => void;
@@ -327,7 +333,7 @@ function AssetActions({
 
   return (
     <div className="flex flex-wrap justify-end gap-2">
-      {canProcess && (
+      {canManage && canProcess && (
         <button
           data-tutorial="movie-asset-prepare"
           type="button"
@@ -344,7 +350,7 @@ function AssetActions({
         </button>
       )}
 
-      {asset.status === "failed" && (
+      {canManage && asset.status === "failed" && (
         <button
           data-tutorial="movie-asset-retry"
           type="button"
@@ -357,7 +363,7 @@ function AssetActions({
         </button>
       )}
 
-      {asset.status === "ready" &&
+      {canPublish && asset.status === "ready" &&
         (asset.is_streamable ? (
           <button
             data-tutorial="movie-asset-unpublish"
@@ -460,16 +466,20 @@ export default function MovieUploadSection() {
   const [sourceFile, setSourceFile] = useState<File | null>(null);
   const [activeActionId, setActiveActionId] = useState<string | null>(null);
   const { isPlayback, demoState } = useAdminTutorial();
+  const { admin } = useAdminAuth();
+  const canManage = hasAdminPermission(admin, "catalog", "manage");
+  const canPublish = hasAdminPermission(admin, "publish", "manage");
+  const canViewProducers = hasAdminPermission(admin, "producers");
 
   const moviesQuery = useGetMovies(!isPlayback);
   const assetsQuery = useGetMovieAssets(!isPlayback);
-  const directorsQuery = useGetDirectors(!isPlayback);
-  const actorsQuery = useGetActors(!isPlayback);
-  const genresQuery = useGetGenres(!isPlayback);
-  const producersQuery = useGetProducers(!isPlayback);
+  const directorsQuery = useGetDirectors(!isPlayback && canManage);
+  const actorsQuery = useGetActors(!isPlayback && canManage);
+  const genresQuery = useGetGenres(!isPlayback && canManage);
+  const producersQuery = useGetProducers(!isPlayback && canManage && canViewProducers);
 
   const createMovie = useCreateMovie();
-  const drafts = useGetMovieDrafts<Partial<DraftMetadata>>(!isPlayback);
+  const drafts = useGetMovieDrafts<Partial<DraftMetadata>>(!isPlayback && canManage);
   const saveDraft = useSaveMovieDraft<DraftMetadata>();
   const uploadAsset = useUploadMovieAsset();
   const processJob = useProcessMovieAssetJob();
@@ -603,7 +613,7 @@ export default function MovieUploadSection() {
   };
 
   const handleSaveDraft = async () => {
-    if (isPlayback || createMovie.isPending || saveDraft.isPending) return;
+    if (!canManage || isPlayback || createMovie.isPending || saveDraft.isPending) return;
     const { posterFile, titleSvgFile, trailerFile, ...metadata } = movieForm;
     try {
       const draft = await saveDraft.mutateAsync({ id: draftId, metadata });
@@ -618,7 +628,7 @@ export default function MovieUploadSection() {
 
   const handleCreateMovie = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isPlayback || saveDraft.isPending || createMovie.isPending) return;
+    if (!canManage || isPlayback || saveDraft.isPending || createMovie.isPending) return;
     setFormError("");
     setNotice("");
 
@@ -689,7 +699,7 @@ export default function MovieUploadSection() {
 
   const handleUploadAsset = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isPlayback) return;
+    if (!canManage || isPlayback || (existingUpload?.is_streamable && !canPublish)) return;
     setFormError("");
     setNotice("");
 
@@ -772,12 +782,11 @@ export default function MovieUploadSection() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight text-slate-950">
-            Upload a movie
+            {canManage ? "Upload a movie" : "Movies"}
           </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Add the movie details, upload the full video, then publish it for
-            viewers.
-          </p>
+          {canManage && <p className="mt-1 text-sm text-slate-600">
+            Add movie details and upload the full video for processing.
+          </p>}
         </div>
 
         <button
@@ -787,10 +796,12 @@ export default function MovieUploadSection() {
             if (isPlayback) return;
             moviesQuery.refetch();
             assetsQuery.refetch();
-            producersQuery.refetch();
-            directorsQuery.refetch();
-            actorsQuery.refetch();
-            genresQuery.refetch();
+            if (canManage) {
+              if (canViewProducers) producersQuery.refetch();
+              directorsQuery.refetch();
+              actorsQuery.refetch();
+              genresQuery.refetch();
+            }
           }}
           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50"
         >
@@ -799,7 +810,7 @@ export default function MovieUploadSection() {
         </button>
       </div>
 
-      <ol
+      {canManage && <ol
         data-tutorial="movie-workflow-overview"
         aria-label="Movie upload workflow"
         className="grid gap-3 sm:grid-cols-3"
@@ -830,7 +841,7 @@ export default function MovieUploadSection() {
             </div>
           </li>
         ))}
-      </ol>
+      </ol>}
       {!isPlayback && catalogQueries.some((query) => query.isError) && (
         <div
           role="alert"
@@ -856,6 +867,7 @@ export default function MovieUploadSection() {
           {formError}
         </p>
       )}
+      {canManage && <>
       <div className="flex flex-wrap gap-2" aria-label="Choose upload task">
         <button
           data-tutorial="movie-tab-details"
@@ -1358,6 +1370,7 @@ export default function MovieUploadSection() {
                   uploadAsset.isPending ||
                   !selectedMovieId ||
                   !sourceFile ||
+                  (existingUpload?.is_streamable && !canPublish) ||
                   moviesQuery.isError
                 }
                 className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-emerald-600 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 disabled:opacity-50"
@@ -1378,6 +1391,7 @@ export default function MovieUploadSection() {
         </section>
       </div>
 
+      </>}
       <section data-tutorial="movie-processing-queue" className="overflow-hidden rounded-3xl border border-slate-200 bg-white shadow-sm">
         <div className="border-b border-slate-100 px-4 py-5 sm:px-6">
           <h2
@@ -1502,6 +1516,8 @@ export default function MovieUploadSection() {
                     <AssetActions
                       asset={asset}
                       isBusy={isBusy}
+                      canManage={canManage && (!asset.is_streamable || canPublish)}
+                      canPublish={canPublish}
                       onProcess={() => {
                         if (!asset.latest_job) return;
                         runAssetAction(
