@@ -1,9 +1,12 @@
 "use client";
 import { useCallback, useEffect, useState } from "react";
 import { api, Application } from "@/features/coordination/data";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { hasAdminPermission } from "@/features/dashboard/permissions";
 import CreatorPipeline from "@/features/coordination/CreatorPipeline";
 import "@/features/coordination/workspace.css";
 export default function CreatorApplications() {
+  const { admin } = useAdminAuth();
   const [items, setItems] = useState<Application[]>([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(true);
@@ -43,7 +46,7 @@ export default function CreatorApplications() {
       {loading ? (
         <p className="zb-empty">Loading applications…</p>
       ) : (
-        <CreatorPipeline applications={items} onRefresh={load} />
+        <CreatorPipeline applications={items} onRefresh={load} canManage={hasAdminPermission(admin, "creators", "manage")} />
       )}
     </div>
   );

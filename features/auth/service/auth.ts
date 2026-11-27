@@ -1,22 +1,12 @@
 import axios from "axios";
+import type { AdminUser } from "@/features/dashboard/permissions";
 import { useMutation } from "@tanstack/react-query";
 
-type LoginPayLoad = {
-  email: string;
-  password: string;
-};
+type LoginPayLoad = { email: string; password: string } | { challenge_token: string; otp: string };
 
-export interface LoginResponse {
-  user: {
-    id: string;
-    email: string;
-    is_staff: true;
-    is_superuser: boolean;
-    capabilities?: {
-      manage_operators?: boolean;
-    };
-  };
-}
+export type AdminSessionResponse = { user: AdminUser };
+
+export type LoginResponse = AdminSessionResponse | { requires_2fa: true; challenge_token: string };
 
 export const useAdminLogin = () => {
   return useMutation({

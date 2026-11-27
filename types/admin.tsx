@@ -11,4 +11,9 @@ export type AdminSection =
   | "/admin/images"
   | "/admin/operators"
   | "/admin/tutorials"
-  | "/admin/creator-applications";
+  | "/admin/creator-applications"
+  | "/admin/admins"
+  | "/admin/audit"
+  | "/admin/reports"
+  | "/admin/forensics"
+  | "/eco/boarddash/55019";

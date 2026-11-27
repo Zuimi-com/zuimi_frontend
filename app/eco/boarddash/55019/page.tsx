@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { getApiBaseUrl } from "@/lib/get-api-base-url";
+import { hasAdminPermission } from "@/features/dashboard/permissions";
 import Board from "@/features/coordination/Board";
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -30,6 +31,12 @@ export default async function BoardPage() {
   if (!response.ok)
     throw new Error("Unable to verify the admin session. Please retry.");
   const data = await response.json();
-  if (data.user?.is_staff !== true) redirect("/admin-login");
-  return <Board />;
+  if (data.user?.is_dashboard_admin !== true) redirect("/admin-login");
+  if (!hasAdminPermission(data.user, "coordination")) redirect("/admin");
+  return <Board
+    canManage={hasAdminPermission(data.user, "coordination", "manage")}
+    canViewCreators={hasAdminPermission(data.user, "creators")}
+    canManageCreators={hasAdminPermission(data.user, "creators", "manage")}
+    canViewAudit={hasAdminPermission(data.user, "audit")}
+  />;
 }

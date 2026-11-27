@@ -30,6 +30,8 @@ import {
 import { AlertCircle, BriefcaseBusiness, Camera, Check, Crown, Film, Loader2, Music, Pencil, Plus, Power, Trash2, X, RotateCcw } from "lucide-react";
 import { Fragment, useEffect, useId, useMemo, useState } from "react";
 import toast from "react-hot-toast";
+import { useAdminAuth } from "@/features/dashboard/context/admin-auth-context";
+import { hasAdminPermission } from "@/features/dashboard/permissions";
 import { useAdminTutorial } from "@/components/admin/tutorials/AdminTutorialProvider";
 
 type FormValues = {
@@ -62,6 +64,7 @@ type EntitySectionProps = {
   rows: EntityRow[];
   isLoading: boolean;
   isBusy: boolean;
+  canManage: boolean;
   onCreate: (values: FormValues) => Promise<MutationResult>;
   onUpdate: (id: string, values: FormValues) => Promise<MutationResult>;
   onDeactivate: (id: string) => Promise<MutationResult>;
@@ -180,6 +183,7 @@ function EntitySection({
   rows,
   isLoading,
   isBusy,
+  canManage,
   onCreate,
   onUpdate,
   onDeactivate,
@@ -257,7 +261,7 @@ function EntitySection({
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    if (isPlayback) return;
+    if (!canManage || isPlayback) return;
 
     const primaryValue = form.primary.trim();
     if (!primaryValue) {
@@ -287,7 +291,7 @@ function EntitySection({
   };
 
   const handleDeactivateClick = async () => {
-    if (isPlayback) return;
+    if (!canManage || isPlayback) return;
     if (!deactivateConfirm) return;
 
     setDeactivateLoading(true);
@@ -303,7 +307,7 @@ function EntitySection({
   };
 
   const handleActivateClick = async () => {
-    if (isPlayback) return;
+    if (!canManage || isPlayback) return;
     if (!activateConfirm) return;
 
     setActivateLoading(true);
@@ -558,7 +562,7 @@ function EntitySection({
                 setIsExpanded(true);
                 setAdding(true);
               }}
-              disabled={isPlayback || isBusy}
+              disabled={!canManage || isPlayback || isBusy}
               className="inline-flex items-center gap-2 rounded-lg bg-blue-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-50"
             >
               <Plus className="h-4 w-4" />
@@ -594,7 +598,7 @@ function EntitySection({
 
       {isExpanded && (
         <>
-          {!editingId && (adding || isPlayback) && entryForm}
+          {canManage && !editingId && (adding || isPlayback) && entryForm}
           {/* Data Section */}
           <div className="px-6 py-6">
             {isLoading && !isPlayback ? (
@@ -696,7 +700,7 @@ function EntitySection({
                               <button
                                 type="button"
                                 className="mt-1 text-xs font-medium text-blue-700 hover:underline disabled:opacity-50"
-                                disabled={isPlayback || isBusy}
+                                disabled={!canManage || isPlayback || isBusy}
                                 onClick={async () => {
                                   try {
                                     await onSendVerification?.(row.id);
@@ -750,7 +754,7 @@ function EntitySection({
                                   imageFile: null,
                                 });
                               }}
-                              disabled={isPlayback}
+                              disabled={!canManage || isPlayback}
                               className="inline-flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-1.5 text-xs font-medium text-blue-700 transition hover:bg-blue-100"
                             >
                               <Pencil className="h-3.5 w-3.5" />
@@ -764,7 +768,7 @@ function EntitySection({
                                 onClick={() =>
                                   setActivateConfirm(row.id)
                                 }
-                                disabled={isPlayback}
+                                disabled={!canManage || isPlayback}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-1.5 text-xs font-medium text-emerald-700 transition hover:bg-emerald-100"
                               >
                                 <RotateCcw className="h-3.5 w-3.5" />
@@ -779,7 +783,7 @@ function EntitySection({
                                 onClick={() =>
                                   setDeactivateConfirm(row.id)
                                 }
-                                disabled={isPlayback || isBusy}
+                                disabled={!canManage || isPlayback || isBusy}
                                 className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition hover:bg-red-100 disabled:cursor-not-allowed disabled:opacity-50"
                               >
                                 <Trash2 className="h-3.5 w-3.5" />
@@ -791,7 +795,7 @@ function EntitySection({
                           </div>
                         </td>
                       </tr>
-                      {editingId === row.id && (
+                      {canManage && editingId === row.id && (
                         <tr>
                           <td colSpan={supportsImage ? 6 : 5}>{entryForm}</td>
                         </tr>
@@ -881,10 +885,12 @@ export default function CatalogManagementSection({
   mode = "all",
 }: CatalogManagementSectionProps) {
   const { isPlayback } = useAdminTutorial();
-  const actorsQuery = useGetActors(!isPlayback);
-  const directorsQuery = useGetDirectors(!isPlayback);
-  const genresQuery = useGetGenres(!isPlayback);
-  const producersQuery = useGetProducers(!isPlayback);
+  const { admin } = useAdminAuth();
+  const canManageCatalog = hasAdminPermission(admin, "catalog", "manage");
+  const actorsQuery = useGetActors(!isPlayback && (mode === "all" || mode === "actors"));
+  const directorsQuery = useGetDirectors(!isPlayback && (mode === "all" || mode === "directors"));
+  const genresQuery = useGetGenres(!isPlayback && (mode === "all" || mode === "genres"));
+  const producersQuery = useGetProducers(!isPlayback && (mode === "all" || mode === "producers"));
 
   const createActor = useCreateActor();
   const updateActor = useUpdateActor();
@@ -945,6 +951,7 @@ export default function CatalogManagementSection({
       {/* Content Sections */}
       {showProducers && (
         <EntitySection
+          canManage={hasAdminPermission(admin, "producers", "manage")}
           title="Producers"
           description="Add and maintain producers available during movie upload."
           primaryLabel="Full Name"
@@ -981,6 +988,7 @@ export default function CatalogManagementSection({
 
       {showDirectors && (
         <EntitySection
+          canManage={canManageCatalog}
           title="Directors"
           description="Add and maintain director profiles used during movie upload."
           primaryLabel="Full Name"
@@ -1015,6 +1023,7 @@ export default function CatalogManagementSection({
 
       {showActors && (
         <EntitySection
+          canManage={canManageCatalog}
           title="Actors"
           description="Maintain cast profiles available for movie casting."
           primaryLabel="Full Name"
@@ -1047,6 +1056,7 @@ export default function CatalogManagementSection({
 
       {showGenres && (
         <EntitySection
+          canManage={canManageCatalog}
           title="Genres"
           description="Control genres available for movie classification."
           primaryLabel="Name"

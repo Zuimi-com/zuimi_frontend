@@ -9,7 +9,7 @@ import {
 export async function GET() {
   const response = await fetchWithAdminSession("/login/admin/session/");
   const data = await response.json();
-  if (!response.ok) {
+  if (response.status === 401 || response.status === 403) {
     await clearAdminSession();
   }
   return NextResponse.json(data, { status: response.status });

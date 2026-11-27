@@ -5,9 +5,11 @@ import { Panel, Pill, Stats } from "./ui";
 export default function CreatorPipeline({
   applications,
   onRefresh,
+  canManage,
 }: {
   applications: Application[];
   onRefresh: () => Promise<void>;
+  canManage: boolean;
 }) {
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
@@ -85,6 +87,7 @@ export default function CreatorPipeline({
             key={`${a.id}-${a.status}-${a.review_notes}`}
             application={a}
             onRefresh={onRefresh}
+            canManage={canManage}
           />
         ))}
         {!filtered.length && (
@@ -105,9 +108,11 @@ export default function CreatorPipeline({
 function Review({
   application: a,
   onRefresh,
+  canManage,
 }: {
   application: Application;
   onRefresh: () => Promise<void>;
+  canManage: boolean;
 }) {
   const [status, setStatus] = useState(a.status);
   const [notes, setNotes] = useState(a.review_notes);
@@ -189,7 +194,7 @@ function Review({
           </>
         )}
       </dl>
-      <div className="zb-fields">
+      <fieldset className="zb-fields" disabled={!canManage}>
         <label className="zb-field">
           Review status
           <select value={status} onChange={(e) => setStatus(e.target.value)}>
@@ -210,7 +215,7 @@ function Review({
             onChange={(e) => setNotes(e.target.value)}
           />
         </label>
-      </div>
+      </fieldset>
       {error && (
         <div role="alert" className="zb-error">
           {error}
@@ -221,13 +226,13 @@ function Review({
           {message}
         </p>
       )}
-      <button
+      {canManage && <button
         disabled={busy}
         className="zb-button zb-gradient mt-4"
         onClick={() => void save()}
       >
         {busy ? "Saving…" : "Save review"}
-      </button>
+      </button>}
     </details>
   );
 }

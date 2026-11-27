@@ -22,24 +22,33 @@ export default function Page() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [challenge, setChallenge] = useState("");
+  const [otp, setOtp] = useState("");
   const adminLogin = useAdminLogin();
   const { isAuthenticated, handleAuthenticate } = useAdminAuth();
 
   const router = useRouter();
 
   const loading = adminLogin.isPending;
-  const isDisabled = (loading && !email) || !password;
+  const isDisabled = loading || (challenge ? !/^\d{6}$/.test(otp) : !email || !password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     adminLogin.mutate(
-      { email, password },
+      challenge ? { challenge_token: challenge, otp } : { email, password },
       {
         onSuccess: (data) => {
+          if ("requires_2fa" in data) {
+            setChallenge(data.challenge_token);
+            setPassword("");
+            toast("Check your email for the verification code.");
+            return;
+          }
           toast("Login Successful");
           handleAuthenticate(data.user);
           router.push("/admin");
         },
+        onError: () => toast.error("Login failed. Check your credentials or code and try again."),
       },
     );
   };
@@ -72,13 +81,22 @@ export default function Page() {
             onSubmit={handleSubmit}
             className="border-[1px] border-[#FFFFFF33] bg-[#EFEDED0D] rounded-[24px] w-[834px] h-[410px] p-[41px] space-y-6"
           >
+            {challenge ? (
+              <div className="space-y-4">
+                <label className="block text-white" htmlFor="admin-otp">Email verification code</label>
+                <input id="admin-otp" value={otp} onChange={(e) => setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                  inputMode="numeric" autoComplete="one-time-code" maxLength={6}
+                  className="border pl-5 text-white border-[#FFFFFF33] w-full h-[48px] rounded-xl bg-[#FFFFFF1A]" />
+                <button type="button" onClick={() => { setChallenge(""); setOtp(""); }} className="text-[#5F67C7]">Back to login</button>
+              </div>
+            ) : (<>
             <div className="relative">
               <span className="block text-[#FFFFFF] mb-1"> Admin Email </span>
 
               {!email && (
                 <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 pointer-events-none text-[#6A7280] pt-6">
                   <Image src={mail} alt="mail" width={20} height={20} />
-                  <span>admin@zuimi.com</span>
+                  <span>admin@zuimi.com.ng</span>
                 </div>
               )}
 
@@ -137,6 +155,7 @@ export default function Page() {
                 Forgot Password?
               </Link>
             </div>
+            </>)}
 
             <div>
               <button
@@ -149,7 +168,7 @@ export default function Page() {
                     <Loader2 className="h-4 w-4 animate-spin" />
                   </>
                 ) : (
-                  "Login to Admin Portal"
+                  challenge ? "Verify code" : "Login to Admin Portal"
                 )}
               </button>
             </div>
